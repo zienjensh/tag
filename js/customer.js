@@ -1,4 +1,4 @@
-// public/js/customer.js - النسخة الكاملة والنهائية
+// js/customer.js - النسخة المحسنة والكاملة
 
 document.addEventListener('DOMContentLoaded', () => {
     // التأكد من بناء القائمة الجانبية أولاً
@@ -7,19 +7,51 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     loadPageData();
     setupEventListeners();
+    initializeNotificationSounds();
 });
 
 const API_BASE_URL = 'http://127.0.0.1:8000/api';
 let currentEditingId = null;
 let searchTimeout = null;
+let notificationSounds = {};
+
+// تهيئة الأصوات
+function initializeNotificationSounds() {
+    notificationSounds = {
+        success: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'),
+        error: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'),
+        notification: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT')
+    };
+}
+
+function playNotificationSound(type = 'notification') {
+    try {
+        if (notificationSounds[type]) {
+            notificationSounds[type].volume = 0.3;
+            notificationSounds[type].play().catch(e => console.log('Sound play failed:', e));
+        }
+    } catch (e) {
+        console.log('Sound error:', e);
+    }
+}
 
 function setupEventListeners() {
     // الأزرار الثابتة
-    document.getElementById('addCustomerModalBtn')?.addEventListener('click', () => openModal('addCustomerModal'));
+    document.getElementById('addCustomerModalBtn')?.addEventListener('click', () => {
+        console.log('Add customer button clicked');
+        openModal('addCustomerModal');
+    });
     
     // نماذج الإضافة والتعديل
-    document.getElementById('addCustomerForm')?.addEventListener('submit', e => { e.preventDefault(); saveCustomer(); });
-    document.getElementById('editCustomerForm')?.addEventListener('submit', e => { e.preventDefault(); updateCustomer(); });
+    document.getElementById('addCustomerForm')?.addEventListener('submit', e => { 
+        e.preventDefault(); 
+        saveCustomer(); 
+    });
+    
+    document.getElementById('editCustomerForm')?.addEventListener('submit', e => { 
+        e.preventDefault(); 
+        updateCustomer(); 
+    });
     
     // البحث
     document.getElementById('customerSearchInput')?.addEventListener('keyup', (e) => {
@@ -37,9 +69,9 @@ function setupEventListeners() {
         if (button.classList.contains('close-btn') || button.classList.contains('btn-cancel')) {
             const modal = button.closest('.modal');
             if (modal) {
-                modal.classList.remove('active');
-                document.body.style.overflow = '';
+                closeModal(modal.id);
             }
+            return;
         }
 
         const { action, id } = button.dataset;
@@ -55,28 +87,46 @@ function setupEventListeners() {
 async function loadPageData(searchTerm = '') {
     showNotification('جاري تحميل بيانات العملاء...', 'info');
     try {
-        const url = searchTerm ? `customers?search=${searchTerm}` : 'customers';
+        const url = searchTerm ? `customers?search=${encodeURIComponent(searchTerm)}` : 'customers';
         const customers = await sendRequest(url, 'GET');
         
         renderCustomerTable(customers);
         updateSummaryCards(customers);
+        
+        playNotificationSound('success');
+        showNotification('تم تحميل البيانات بنجاح', 'success');
     } catch (error) {
-        showNotification('فشل تحميل البيانات', 'error');
+        playNotificationSound('error');
+        showNotification('فشل تحميل البيانات: ' + error.message, 'error');
     }
 }
 
 function renderCustomerTable(customers) {
     const tableBody = document.getElementById('customerTableBody');
     if (!tableBody) return;
+    
     tableBody.innerHTML = '';
+    
     if (!customers || customers.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="7" class="no-data">لا يوجد عملاء مسجلين.</td></tr>`;
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="no-data-cell">
+                    <div class="no-data-content">
+                        <i class="fas fa-users"></i>
+                        <h4>لا يوجد عملاء مسجلين</h4>
+                        <p>قم بإضافة أول عميل للبدء</p>
+                    </div>
+                </td>
+            </tr>
+        `;
         return;
     }
+    
     customers.forEach(customer => {
         const row = document.createElement('tr');
         const balanceClass = parseFloat(customer.balance) > 0 ? 'text-danger' : 'text-success';
-        const lastTransaction = customer.last_transaction ? new Date(customer.last_transaction).toLocaleDateString('ar-EG') : 'لا يوجد';
+        const lastTransaction = customer.last_transaction ? 
+            new Date(customer.last_transaction).toLocaleDateString('ar-EG') : 'لا يوجد';
         
         row.innerHTML = `
             <td>${customer.customer_code}</td>
@@ -84,11 +134,23 @@ function renderCustomerTable(customers) {
             <td>${customer.phone || '-'}</td>
             <td class="${balanceClass}">${parseFloat(customer.balance).toFixed(2)} ج</td>
             <td>${lastTransaction}</td>
-            <td><span class="status-badge ${customer.is_active ? 'available' : 'busy'}">${customer.is_active ? 'نشط' : 'غير نشط'}</span></td>
+            <td>
+                <span class="status-badge ${customer.is_active ? 'available' : 'busy'}">
+                    ${customer.is_active ? 'نشط' : 'غير نشط'}
+                </span>
+            </td>
             <td class="actions">
-                <button class="action-btn view" data-action="view-details" data-id="${customer.id}" title="تفاصيل"><i class="fas fa-info-circle"></i></button>
-                <button class="action-btn edit" data-action="edit" data-id="${customer.id}" title="تعديل"><i class="fas fa-edit"></i></button>
-                <button class="action-btn delete" data-action="delete" data-id="${customer.id}" title="حذف"><i class="fas fa-trash"></i></button>
+                <div class="action-buttons">
+                    <button class="btn-action btn-view" data-action="view-details" data-id="${customer.id}" title="تفاصيل">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                    <button class="btn-action btn-edit" data-action="edit" data-id="${customer.id}" title="تعديل">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-action btn-delete" data-action="delete" data-id="${customer.id}" title="حذف">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </td>
         `;
         tableBody.appendChild(row);
@@ -97,8 +159,11 @@ function renderCustomerTable(customers) {
 
 function updateSummaryCards(customers) {
     const totalDue = customers.reduce((sum, cust) => sum + parseFloat(cust.balance), 0);
-    document.getElementById('totalDueAmount').textContent = totalDue.toFixed(2);
-    document.getElementById('totalCustomersCount').textContent = `${customers.length} عملاء`;
+    const totalDueEl = document.getElementById('totalDueAmount');
+    const totalCustomersEl = document.getElementById('totalCustomersCount');
+    
+    if (totalDueEl) totalDueEl.textContent = totalDue.toFixed(2);
+    if (totalCustomersEl) totalCustomersEl.textContent = `${customers.length} عملاء`;
 }
 
 async function saveCustomer() {
@@ -108,11 +173,18 @@ async function saveCustomer() {
         phone: form.customerPhone.value,
         notes: form.customerNotes.value
     };
-    await handleRequest(sendRequest('customers', 'POST', data), 'تمت إضافة العميل بنجاح', () => {
+    
+    try {
+        await sendRequest('customers', 'POST', data);
+        playNotificationSound('success');
+        showNotification('تمت إضافة العميل بنجاح', 'success');
         loadPageData();
         closeModal('addCustomerModal');
         form.reset();
-    });
+    } catch (error) {
+        playNotificationSound('error');
+        showNotification('فشل في إضافة العميل: ' + error.message, 'error');
+    }
 }
 
 async function editCustomer(id) {
@@ -123,17 +195,20 @@ async function editCustomer(id) {
         currentEditingId = id;
         const form = document.getElementById('editCustomerForm');
         form.editCustomerName.value = customer.name;
-        form.editCustomerPhone.value = customer.phone;
-        form.editCustomerNotes.value = customer.notes;
+        form.editCustomerPhone.value = customer.phone || '';
+        form.editCustomerNotes.value = customer.notes || '';
         form.editCustomerIsActive.checked = customer.is_active;
+        
         openModal('editCustomerModal');
     } catch (error) {
-        showNotification('فشل في جلب بيانات العميل', 'error');
+        playNotificationSound('error');
+        showNotification('فشل في جلب بيانات العميل: ' + error.message, 'error');
     }
 }
 
 async function updateCustomer() {
     if (!currentEditingId) return;
+    
     const form = document.getElementById('editCustomerForm');
     const data = {
         name: form.editCustomerName.value,
@@ -141,15 +216,30 @@ async function updateCustomer() {
         notes: form.editCustomerNotes.value,
         is_active: form.editCustomerIsActive.checked
     };
-    await handleRequest(sendRequest(`customers/${currentEditingId}`, 'PUT', data), 'تم تحديث البيانات بنجاح', () => {
+    
+    try {
+        await sendRequest(`customers/${currentEditingId}`, 'PUT', data);
+        playNotificationSound('success');
+        showNotification('تم تحديث البيانات بنجاح', 'success');
         loadPageData();
         closeModal('editCustomerModal');
-    });
+    } catch (error) {
+        playNotificationSound('error');
+        showNotification('فشل في تحديث البيانات: ' + error.message, 'error');
+    }
 }
 
 async function deleteCustomer(id) {
     if (confirm('هل أنت متأكد من حذف هذا العميل؟')) {
-        await handleRequest(sendRequest(`customers/${id}`, 'DELETE'), 'تم حذف العميل بنجاح', loadPageData);
+        try {
+            await sendRequest(`customers/${id}`, 'DELETE');
+            playNotificationSound('success');
+            showNotification('تم حذف العميل بنجاح', 'success');
+            loadPageData();
+        } catch (error) {
+            playNotificationSound('error');
+            showNotification('فشل في حذف العميل: ' + error.message, 'error');
+        }
     }
 }
 
@@ -157,22 +247,122 @@ async function viewCustomerDetails(id) {
     try {
         const customer = await sendRequest(`customers/${id}`, 'GET');
         if (!customer) return;
+        
         document.getElementById('detailCustomerCode').textContent = customer.customer_code;
         document.getElementById('detailCustomerName').textContent = customer.name;
         document.getElementById('detailCustomerPhone').textContent = customer.phone || '-';
         document.getElementById('detailCustomerBalance').textContent = `${parseFloat(customer.balance).toFixed(2)} ج`;
         document.getElementById('detailCustomerSince').textContent = new Date(customer.created_at).toLocaleDateString('ar-EG');
-        document.getElementById('detailLastTransaction').textContent = customer.last_transaction ? new Date(customer.last_transaction).toLocaleDateString('ar-EG') : 'لا يوجد';
+        document.getElementById('detailLastTransaction').textContent = customer.last_transaction ? 
+            new Date(customer.last_transaction).toLocaleDateString('ar-EG') : 'لا يوجد';
         document.getElementById('detailCustomerNotes').textContent = customer.notes || 'لا يوجد';
+        
         openModal('customerDetailsModal');
     } catch (error) {
-        showNotification('فشل في عرض التفاصيل', 'error');
+        playNotificationSound('error');
+        showNotification('فشل في عرض التفاصيل: ' + error.message, 'error');
     }
 }
 
-// --- دوال المساعدة ---
-function openModal(modalId) { document.getElementById(modalId)?.classList.add('active'); }
-function closeModal(modalId) { document.getElementById(modalId)?.classList.remove('active'); }
-async function sendRequest(endpoint, method, body = null) { try { const options = { method, headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, }; if (body) { options.body = JSON.stringify(body); } const response = await fetch(`${API_BASE_URL}/${endpoint}`, options); const data = await response.json(); if (!response.ok) { const errorMessages = Object.values(data.errors || {}).flat().join('\n'); throw new Error(errorMessages || data.message || 'حدث خطأ غير متوقع'); } return data; } catch (error) { console.error(`API Error:`, error); throw error; } }
-async function handleRequest(requestPromise, successMessage, callback) { try { await requestPromise; if (successMessage) showNotification(successMessage, 'success'); if (callback) await callback(); } catch (error) { showNotification(`فشل: ${error.message}`, 'error'); } }
-function showNotification(message, type = 'info') { const container = document.createElement('div'); container.className = `notification show ${type}`; const icons = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' }; container.innerHTML = `<i class="fas ${icons[type]}"></i><span style="margin-right: 10px;">${message}</span>`; document.body.appendChild(container); if (!document.getElementById('notification-styles')) { const style = document.createElement('style'); style.id = 'notification-styles'; style.textContent = `.notification { position: fixed; top: 20px; right: 20px; background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; z-index: 10000; transform: translateX(calc(100% + 20px)); transition: transform 0.5s ease-in-out; } .notification.show { transform: translateX(0); } .notification.success { border-left: 5px solid #28a745; } .notification.error { border-left: 5px solid #dc3545; } .notification.info { border-left: 5px solid #17a2b8; }`; document.head.appendChild(style); } setTimeout(() => { container.classList.remove('show'); setTimeout(() => container.remove(), 500); }, 4000); }
+// دوال المساعدة
+function openModal(modalId) { 
+    console.log('Opening modal:', modalId);
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    } else {
+        console.error('Modal not found:', modalId);
+    }
+}
+
+function closeModal(modalId) { 
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+}
+
+async function sendRequest(endpoint, method, body = null) { 
+    try { 
+        const options = { 
+            method, 
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Accept': 'application/json' 
+            },
+            credentials: 'include'
+        };
+        
+        // إضافة التوكن
+        const token = sessionStorage.getItem('authToken');
+        if (token) {
+            options.headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        if (body) { 
+            options.body = JSON.stringify(body); 
+        } 
+        
+        const response = await fetch(`${API_BASE_URL}/${endpoint}`, options); 
+        
+        if (response.status === 401 || response.status === 419) {
+            sessionStorage.clear();
+            window.location.href = '/tag/index.php';
+            return Promise.reject(new Error("انتهت صلاحية الجلسة"));
+        }
+        
+        if (!response.ok) {
+            const data = await response.json();
+            const errorMessages = data.errors ? 
+                Object.values(data.errors).flat().join('\n') : 
+                data.message || 'حدث خطأ غير متوقع';
+            throw new Error(errorMessages);
+        }
+        
+        return response.status !== 204 ? await response.json() : null;
+    } catch (error) { 
+        console.error(`API Error:`, error); 
+        throw error; 
+    } 
+}
+
+function showNotification(message, type = 'info') { 
+    const container = document.createElement('div'); 
+    container.className = `notification show ${type}`; 
+    const icons = { 
+        success: 'fa-check-circle', 
+        error: 'fa-times-circle', 
+        info: 'fa-info-circle',
+        warning: 'fa-exclamation-triangle'
+    }; 
+    container.innerHTML = `<i class="fas ${icons[type]}"></i><span style="margin-right: 10px;">${message}</span>`; 
+    document.body.appendChild(container); 
+
+    if (!document.getElementById('notification-styles')) { 
+        const style = document.createElement('style'); 
+        style.id = 'notification-styles'; 
+        style.textContent = `
+            .notification { 
+                position: fixed; top: 20px; right: 20px; background: white; 
+                padding: 15px 20px; border-radius: 8px; 
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; 
+                align-items: center; gap: 10px; z-index: 10000; 
+                transform: translateX(calc(100% + 20px)); 
+                transition: transform 0.5s ease-in-out; 
+            } 
+            .notification.show { transform: translateX(0); } 
+            .notification.success { border-left: 5px solid #28a745; color: #28a745; } 
+            .notification.error { border-left: 5px solid #dc3545; color: #dc3545; } 
+            .notification.info { border-left: 5px solid #17a2b8; color: #17a2b8; }
+            .notification.warning { border-left: 5px solid #ffc107; color: #856404; }
+        `; 
+        document.head.appendChild(style); 
+    } 
+    
+    setTimeout(() => { 
+        container.classList.remove('show'); 
+        setTimeout(() => container.remove(), 500); 
+    }, 4000); 
+}

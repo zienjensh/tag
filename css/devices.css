@@ -1,51 +1,170 @@
-// public/js/customer.js - النسخة الكاملة والنهائية
+/* devices.css - التصميم الاحترافي للأجهزة */
 
-document.addEventListener('DOMContentLoaded', () => {
-    // التأكد من بناء القائمة الجانبية أولاً
-    if (typeof buildSidebar === 'function') {
-        buildSidebar();
-    }
-    loadPageData();
-    setupEventListeners();
-});
-
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
-let currentEditingId = null;
-let searchTimeout = null;
-
-function setupEventListeners() {
-    // الأزرار الثابتة
-    
-    // نماذج الإضافة والتعديل
-    document.getElementById('addCustomerForm')?.addEventListener('submit', e => { e.preventDefault(); saveCustomer(); });
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: #F8F9FA;
+    direction: rtl;
+    color: #343A40;
+    margin: 0;
+    padding: 0;
+}
 
 /* تحسينات للبطاقات */
 .device-card {
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
     transition: all 0.3s ease;
-    border-left: 4px solid transparent;
+    border: 1px solid #eee;
+    width: 280px;
+    min-width: 280px;
+    max-width: 280px;
+    flex-shrink: 0;
+    flex-grow: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeIn 0.5s ease-out;
+    margin: 10px;
+}
+
+.device-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
 }
 
 .device-card.available {
-    border-left-color: #28a745;
+    border-left: 4px solid #28a745;
 }
 
 .device-card.busy {
-    border-left-color: #dc3545;
+    border-left: 4px solid #dc3545;
     background: linear-gradient(135deg, #fff 0%, #fff5f5 100%);
 }
 
 .device-card.maintenance {
-    border-left-color: #ffc107;
+    border-left: 4px solid #ffc107;
     opacity: 0.7;
 }
 
+/* شارات الحالة */
+.device-status-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.device-status-badge.available {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.device-status-badge.busy {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.device-status-badge.maintenance {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+/* زر الحذف */
+.device-delete-btn {
+    position: absolute;
+    top: 50px;
+    right: 15px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: all 0.2s ease;
+    opacity: 0;
+}
+
+.device-card:hover .device-delete-btn {
+    opacity: 1;
+}
+
+.device-delete-btn:hover {
+    background-color: #c82333;
+    transform: scale(1.1);
+}
+
+/* رأس البطاقة */
+.device-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.device-icon {
+    font-size: 48px;
+    color: #6a1b9a;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+.device-card:hover .device-icon {
+    transform: scale(1.1);
+    color: #8e24aa;
+}
+
+.device-info {
+    text-align: center;
+    width: 100%;
+}
+
+.device-info h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.device-info .device-id {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+}
+
 /* تحسين العدادات */
+.device-timer {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
 .timer-display {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 15px;
     padding: 15px;
     margin-bottom: 15px;
     box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    color: white;
 }
 
 .timer-circle {
@@ -57,12 +176,14 @@ function setupEventListeners() {
     align-items: center;
     justify-content: center;
     margin: 0 auto 10px;
+    backdrop-filter: blur(10px);
 }
 
 .timer-value {
     color: white;
     font-weight: bold;
     font-size: 14px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .timer-info {
@@ -71,23 +192,171 @@ function setupEventListeners() {
     text-align: center;
 }
 
-/* تحسين أزرار الإجراءات */
+/* المواصفات */
+.device-specs {
+    margin-bottom: 20px;
+    width: 100%;
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+}
+
+.spec-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px dashed #dee2e6;
+}
+
+.spec-item:last-child {
+    border-bottom: none;
+}
+
+.spec-label {
+    font-weight: 600;
+    color: #666;
+    font-size: 14px;
+}
+
+.spec-value {
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.total-cost {
+    color: #28a745 !important;
+    font-weight: 700 !important;
+    font-size: 16px !important;
+}
+
+/* أزرار الإجراءات */
+.device-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    margin-top: auto;
+}
+
+.action-btn {
+    width: 100%;
+    padding: 12px 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+.action-btn:active {
+    transform: translateY(1px);
+}
+
+.action-btn i {
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.action-btn span {
+    font-size: 14px;
+    font-weight: 600;
+    color: inherit;
+    display: inline;
+    white-space: nowrap;
+}
+
+/* ألوان الأزرار */
+.action-btn.primary {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+}
+
+.action-btn.primary:hover {
+    background: linear-gradient(135deg, #218838 0%, #1ea080 100%);
+}
+
+.action-btn.secondary {
+    background: linear-gradient(135deg, #6a1b9a 0%, #8e24aa 100%);
+    color: white;
+}
+
+.action-btn.secondary:hover {
+    background: linear-gradient(135deg, #4a148c 0%, #7b1fa2 100%);
+}
+
 .action-btn.warning {
-    background-color: #ffc107 !important;
-    color: #212529 !important;
+    background: linear-gradient(135deg, #ffc107 0%, #ffb74d 100%);
+    color: #212529;
 }
 
 .action-btn.warning:hover {
-    background-color: #e0a800 !important;
+    background: linear-gradient(135deg, #e0a800 0%, #ffa726 100%);
 }
 
-.action-btn.danger {
-    background-color: #dc3545 !important;
-    color: white !important;
+.action-btn.info {
+    background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+    color: white;
 }
 
-.action-btn.danger:hover {
-    background-color: #c82333 !important;
+.action-btn.info:hover {
+    background: linear-gradient(135deg, #138496 0%, #1ea080 100%);
+}
+
+/* حاوية الأجهزة */
+.devices-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin: 0;
+    padding: 20px;
+}
+
+/* حالة عدم وجود بيانات */
+.no-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #6c757d;
+    text-align: center;
+    width: 100%;
+}
+
+.no-data i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+    color: #6a1b9a;
+}
+
+.no-data h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+.no-data p {
+    font-size: 1rem;
+    margin: 0;
 }
 
 /* تحسين البوفيه */
@@ -193,7 +462,7 @@ function setupEventListeners() {
     cursor: not-allowed;
 }
 
-/* تحسين ملخص الطلبات */
+/* ملخص الطلبات */
 .order-summary {
     background: #f8f9fa;
     border-radius: 10px;
@@ -303,14 +572,6 @@ function setupEventListeners() {
     padding: 20px;
 }
 
-.no-categories,
-.no-products {
-    text-align: center;
-    color: #6c757d;
-    padding: 20px;
-    font-style: italic;
-}
-
 /* تحسين معلومات الأسعار */
 .device-prices-info {
     background: #e3f2fd;
@@ -412,205 +673,109 @@ function setupEventListeners() {
     .product-grid {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
-}
-
-/* تحسين الحالة الفارغة */
-.loading-spinner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
-    color: #6c757d;
-}
-
-.loading-spinner i {
-    font-size: 3rem;
-    margin-bottom: 15px;
-    color: #667eea;
-}
-
-.loading-spinner p {
-    font-size: 16px;
-    margin: 0;
-}
-
-.no-data {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
-    color: #6c757d;
-    text-align: center;
-}
-
-.no-data i {
-    font-size: 4rem;
-    margin-bottom: 20px;
-    opacity: 0.5;
-}
-
-.no-data h3 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-    color: #495057;
-}
-
-.no-data p {
-    font-size: 1rem;
-    margin: 0;
-}
-    document.getElementById('editCustomerForm')?.addEventListener('submit', e => { e.preventDefault(); updateCustomer(); });
     
-    // البحث
-    document.getElementById('customerSearchInput')?.addEventListener('keyup', (e) => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            loadPageData(e.target.value);
-        }, 500);
-    });
-
-    // استخدام Event Delegation للأزرار الديناميكية
-    document.body.addEventListener('click', function(e) {
-        const button = e.target.closest('button');
-        if (!button) return;
-
-        if (button.classList.contains('close-btn') || button.classList.contains('btn-cancel')) {
-            button.closest('.modal')?.classList.remove('active');
-        }
-
-        const { action, id } = button.dataset;
-        if (!action || !id) return;
-        
-        const numericId = parseInt(id, 10);
-        if (action === 'edit') editCustomer(numericId);
-        if (action === 'delete') deleteCustomer(numericId);
-        if (action === 'view-details') viewCustomerDetails(numericId);
-    });
-}
-
-async function loadPageData(searchTerm = '') {
-    showNotification('جاري تحميل بيانات العملاء...', 'info');
-    try {
-        const url = searchTerm ? `customers?search=${searchTerm}` : 'customers';
-        const customers = await sendRequest(url, 'GET');
-        
-        renderCustomerTable(customers);
-        updateSummaryCards(customers);
-    } catch (error) {
-        showNotification('فشل تحميل البيانات', 'error');
+    .devices-grid {
+        justify-content: center;
+        padding: 10px;
+    }
+    
+    .device-card {
+        width: 100%;
+        max-width: 300px;
+        min-width: 250px;
     }
 }
 
-function renderCustomerTable(customers) {
-    const tableBody = document.getElementById('customerTableBody');
-    if (!tableBody) return;
-    tableBody.innerHTML = '';
-    if (!customers || customers.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="7" class="no-data">لا يوجد عملاء مسجلين.</td></tr>`;
-        return;
+/* تأثيرات الأنيميشن */
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(20px); 
     }
-    customers.forEach(customer => {
-        const row = document.createElement('tr');
-        const balanceClass = parseFloat(customer.balance) > 0 ? 'text-danger' : 'text-success';
-        const lastTransaction = customer.last_transaction ? new Date(customer.last_transaction).toLocaleDateString('ar-EG') : 'لا يوجد';
-        
-        row.innerHTML = `
-            <td>${customer.customer_code}</td>
-            <td>${customer.name}</td>
-            <td>${customer.phone || '-'}</td>
-            <td class="${balanceClass}">${parseFloat(customer.balance).toFixed(2)} ج</td>
-            <td>${lastTransaction}</td>
-            <td><span class="status-badge ${customer.is_active ? 'available' : 'busy'}">${customer.is_active ? 'نشط' : 'غير نشط'}</span></td>
-            <td class="actions">
-                <button class="action-btn view" data-action="view-details" data-id="${customer.id}" title="تفاصيل"><i class="fas fa-info-circle"></i></button>
-                <button class="action-btn edit" data-action="edit" data-id="${customer.id}" title="تعديل"><i class="fas fa-edit"></i></button>
-                <button class="action-btn delete" data-action="delete" data-id="${customer.id}" title="حذف"><i class="fas fa-trash"></i></button>
-            </td>
-        `;
-        tableBody.appendChild(row);
-    });
-}
-
-function updateSummaryCards(customers) {
-    const totalDue = customers.reduce((sum, cust) => sum + parseFloat(cust.balance), 0);
-    document.getElementById('totalDueAmount').textContent = totalDue.toFixed(2);
-    document.getElementById('totalCustomersCount').textContent = `${customers.length} عملاء`;
-}
-
-async function saveCustomer() {
-    const form = document.getElementById('addCustomerForm');
-    const data = {
-        name: form.customerName.value,
-        phone: form.customerPhone.value,
-        notes: form.customerNotes.value
-    };
-    await handleRequest(sendRequest('customers', 'POST', data), 'تمت إضافة العميل بنجاح', () => {
-        loadPageData();
-        closeModal('addCustomerModal');
-        form.reset();
-    });
-}
-
-async function editCustomer(id) {
-    try {
-        const customer = await sendRequest(`customers/${id}`, 'GET');
-        if (!customer) return;
-        
-        currentEditingId = id;
-        const form = document.getElementById('editCustomerForm');
-        form.editCustomerName.value = customer.name;
-        form.editCustomerPhone.value = customer.phone;
-        form.editCustomerNotes.value = customer.notes;
-        form.editCustomerIsActive.checked = customer.is_active;
-        openModal('editCustomerModal');
-    } catch (error) {
-        showNotification('فشل في جلب بيانات العميل', 'error');
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
     }
 }
 
-async function updateCustomer() {
-    if (!currentEditingId) return;
-    const form = document.getElementById('editCustomerForm');
-    const data = {
-        name: form.editCustomerName.value,
-        phone: form.editCustomerPhone.value,
-        notes: form.editCustomerNotes.value,
-        is_active: form.editCustomerIsActive.checked
-    };
-    await handleRequest(sendRequest(`customers/${currentEditingId}`, 'PUT', data), 'تم تحديث البيانات بنجاح', () => {
-        loadPageData();
-        closeModal('editCustomerModal');
-    });
-}
-
-async function deleteCustomer(id) {
-    if (confirm('هل أنت متأكد من حذف هذا العميل؟')) {
-        await handleRequest(sendRequest(`customers/${id}`, 'DELETE'), 'تم حذف العميل بنجاح', loadPageData);
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(40, 167, 69, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(40, 167, 69, 0);
     }
 }
 
-async function viewCustomerDetails(id) {
-    try {
-        const customer = await sendRequest(`customers/${id}`, 'GET');
-        if (!customer) return;
-        document.getElementById('detailCustomerCode').textContent = customer.customer_code;
-        document.getElementById('detailCustomerName').textContent = customer.name;
-        document.getElementById('detailCustomerPhone').textContent = customer.phone || '-';
-        document.getElementById('detailCustomerBalance').textContent = `${parseFloat(customer.balance).toFixed(2)} ج`;
-        document.getElementById('detailCustomerSince').textContent = new Date(customer.created_at).toLocaleDateString('ar-EG');
-        document.getElementById('detailLastTransaction').textContent = customer.last_transaction ? new Date(customer.last_transaction).toLocaleDateString('ar-EG') : 'لا يوجد';
-        document.getElementById('detailCustomerNotes').textContent = customer.notes || 'لا يوجد';
-        openModal('customerDetailsModal');
-    } catch (error) {
-        showNotification('فشل في عرض التفاصيل', 'error');
+/* تأثيرات خاصة للأجهزة المشغولة */
+.device-card.busy .timer-display {
+    animation: pulse 2s infinite;
+}
+
+/* تحسين شريط التمرير */
+.product-grid::-webkit-scrollbar,
+#buffetOrderList::-webkit-scrollbar {
+    width: 8px;
+}
+
+.product-grid::-webkit-scrollbar-track,
+#buffetOrderList::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.product-grid::-webkit-scrollbar-thumb,
+#buffetOrderList::-webkit-scrollbar-thumb {
+    background: #6a1b9a;
+    border-radius: 4px;
+}
+
+.product-grid::-webkit-scrollbar-thumb:hover,
+#buffetOrderList::-webkit-scrollbar-thumb:hover {
+    background: #8e24aa;
+}
+
+/* تحسين المودالات */
+.modal {
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
     }
 }
 
-// --- دوال المساعدة ---
-function openModal(modalId) { document.getElementById(modalId)?.classList.add('active'); }
-function closeModal(modalId) { document.getElementById(modalId)?.classList.remove('active'); }
-async function sendRequest(endpoint, method, body = null) { try { const options = { method, headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, }; if (body) { options.body = JSON.stringify(body); } const response = await fetch(`${API_BASE_URL}/${endpoint}`, options); const data = await response.json(); if (!response.ok) { const errorMessages = Object.values(data.errors || {}).flat().join('\n'); throw new Error(errorMessages || data.message || 'حدث خطأ غير متوقع'); } return data; } catch (error) { console.error(`API Error:`, error); throw error; } }
-async function handleRequest(requestPromise, successMessage, callback) { try { await requestPromise; if (successMessage) showNotification(successMessage, 'success'); if (callback) await callback(); } catch (error) { showNotification(`فشل: ${error.message}`, 'error'); } }
-function showNotification(message, type = 'info') { const container = document.createElement('div'); container.className = `notification show ${type}`; const icons = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' }; container.innerHTML = `<i class="fas ${icons[type]}"></i><span style="margin-right: 10px;">${message}</span>`; document.body.appendChild(container); if (!document.getElementById('notification-styles')) { const style = document.createElement('style'); style.id = 'notification-styles'; style.textContent = `.notification { position: fixed; top: 20px; right: 20px; background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; z-index: 10000; transform: translateX(calc(100% + 20px)); transition: transform 0.5s ease-in-out; } .notification.show { transform: translateX(0); } .notification.success { border-left: 5px solid #28a745; } .notification.error { border-left: 5px solid #dc3545; } .notification.info { border-left: 5px solid #17a2b8; }`; document.head.appendChild(style); } setTimeout(() => { container.classList.remove('show'); setTimeout(() => container.remove(), 500); }, 4000); }
+/* تحسين الإشعارات */
+.notification {
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* تحسين الأزرار العامة */
+.btn-save,
+.btn-cancel {
+    transition: all 0.3s ease;
+}
+
+.btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.btn-cancel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}

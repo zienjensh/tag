@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/shifts/end', [ShiftController::class, 'endShift']);
     Route::get('/shifts/history/days', [ShiftController::class, 'getShiftHistoryDays']);
     Route::post('/shifts/report/day', [ShiftController::class, 'getReportForDay']);
+    Route::post('/shifts/report/period', [ShiftController::class, 'getReportForPeriod']);
     
     // Transactions Route
     Route::post('/transactions', [TransactionController::class, 'store']);

@@ -1,10 +1,11 @@
-// devices.js - النسخة المحدثة والكاملة مع ربط قواعد البيانات
+// devices.js - النسخة المحسنة والكاملة مع ربط قواعد البيانات
 
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof buildSidebar === 'function') buildSidebar();
     loadPageData();
     setupEventListeners();
     setInterval(updateTimers, 1000); // تحديث العدادات كل ثانية
+    initializeNotificationSounds(); // تهيئة الأصوات
 });
 
 let devices = [];
@@ -15,6 +16,27 @@ let activeShift = null;
 let currentSessionId = null;
 let currentOrder = {};
 let currentEditingId = null;
+let notificationSounds = {};
+
+// تهيئة الأصوات
+function initializeNotificationSounds() {
+    notificationSounds = {
+        success: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'),
+        error: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'),
+        notification: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT')
+    };
+}
+
+function playNotificationSound(type = 'notification') {
+    try {
+        if (notificationSounds[type]) {
+            notificationSounds[type].volume = 0.3;
+            notificationSounds[type].play().catch(e => console.log('Sound play failed:', e));
+        }
+    } catch (e) {
+        console.log('Sound error:', e);
+    }
+}
 
 function setupEventListeners() {
     // أزرار إضافة الأجهزة
@@ -87,8 +109,10 @@ async function loadPageData() {
         renderBuffetCategories();
         renderInvoicesTable(data.invoices || []);
         
+        playNotificationSound('success');
         showNotification('تم تحميل البيانات بنجاح', 'success');
     } catch (error) {
+        playNotificationSound('error');
         showNotification('فشل تحميل البيانات: ' + error.message, 'error');
     }
 }
@@ -194,22 +218,19 @@ function createDeviceCard(device) {
                 </button>
             ` : ''}
             
+            <button class="action-btn secondary btn-invoice-bofeih" data-action="invoice" data-id="${device.id}">
+                <i class="fas fa-receipt"></i>
+                <span>الفاتورة والبوفيه</span>
+            </button>
+            
             ${device.status === 'busy' ? `
-                <button class="action-btn secondary" data-action="buffet" data-id="${device.id}">
-                    <i class="fas fa-concierge-bell"></i>
-                    <span>بوفيه</span>
-                </button>
                 <button class="action-btn warning" data-action="edit-time" data-id="${device.id}">
                     <i class="fas fa-clock"></i>
                     <span>تعديل الوقت</span>
                 </button>
-                <button class="action-btn danger" data-action="end" data-id="${device.id}">
-                    <i class="fas fa-stop"></i>
-                    <span>إنهاء</span>
-                </button>
             ` : ''}
             
-            <button class="action-btn info" data-action="details" data-id="${device.id}">
+            <button class="action-btn info btn-device-details" data-action="details" data-id="${device.id}">
                 <i class="fas fa-info-circle"></i>
                 <span>التفاصيل</span>
             </button>
@@ -349,6 +370,7 @@ function handleDeviceAction(action, id) {
     switch(action) {
         case 'start':
             if (!activeShift) {
+                playNotificationSound('error');
                 showNotification('يجب فتح شيفت أولاً لبدء الجلسة', 'warning');
                 return;
             }
@@ -362,24 +384,14 @@ function handleDeviceAction(action, id) {
             openModal('startSessionModal');
             break;
             
-        case 'buffet':
+        case 'invoice':
             currentSessionId = device.active_session?.id;
-            if (currentSessionId) {
-                currentOrder = {};
-                updateOrderSummary();
-                openModal('buffetModal');
-            }
+            openInvoiceBofeihModal(device.id);
             break;
 
         case 'edit-time':
             if (device.active_session) {
                 openEditTimeModal(device.active_session);
-            }
-            break;
-            
-        case 'end':
-            if (confirm('هل أنت متأكد من إنهاء هذه الجلسة وإصدار الفاتورة؟')) {
-                endSession(device.active_session.id);
             }
             break;
             
@@ -395,53 +407,244 @@ function handleDeviceAction(action, id) {
     }
 }
 
-async function saveDevice() {
-    const form = document.getElementById('addDeviceForm');
-    const data = {
-        name: form.deviceName.value,
-        device_type_id: form.deviceTypeSelect.value
-    };
+// مودال الفاتورة والبوفيه الموحد
+function openInvoiceBofeihModal(deviceId) {
+    const device = devices.find(d => d.id === deviceId);
+    if (!device) return;
     
-    try {
-        await sendRequest('/api/devices', 'POST', data);
-        showNotification('تم إضافة الجهاز بنجاح', 'success');
-        closeModal('addDeviceModal');
-        form.reset();
-        loadPageData();
-    } catch (error) {
-        showNotification('فشل في إضافة الجهاز: ' + error.message, 'error');
+    // إنشاء المودال إذا لم يكن موجوداً
+    let modal = document.getElementById('invoiceBofeihModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'invoiceBofeihModal';
+        modal.className = 'modal';
+        document.body.appendChild(modal);
+    }
+    
+    const session = device.active_session;
+    const isActive = device.status === 'busy' && session;
+    
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-receipt"></i> الفاتورة والبوفيه</h3>
+                <span class="device-id-in-modal">${deviceId}</span>
+                <span class="close-btn" onclick="closeModal('invoiceBofeihModal')">&times;</span>
+            </div>
+            
+            ${isActive ? `
+                <div class="modal-section">
+                    <div class="modal-section-title">
+                        <i class="fas fa-clock"></i>
+                        معلومات الجلسة
+                    </div>
+                    <div class="times-section">
+                        <div class="time-start-display">
+                            <p>بدأت في:</p>
+                            <div class="time-value">${new Date(session.start_time).toLocaleTimeString('ar-EG')}</div>
+                        </div>
+                        <div class="timer-display">
+                            <div class="m-icon-wrapper">
+                                <span class="m-icon">M</span>
+                            </div>
+                            <div class="timer-items-row">
+                                <div class="timer-item-small">
+                                    <div class="time-circle-small minutes-circle-small" id="modal-minutes-${deviceId}">00</div>
+                                    <div class="time-label-small">دقيقة</div>
+                                </div>
+                                <div class="timer-item-small">
+                                    <div class="time-circle-small hours-circle-small" id="modal-hours-${deviceId}">00</div>
+                                    <div class="time-label-small">ساعة</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="time-type-options">
+                            <p>نوع اللعب:</p>
+                            <div class="radio-group">
+                                <label>
+                                    <input type="radio" name="playType" value="single" ${session.play_type === 'single' ? 'checked' : ''} disabled>
+                                    <span class="radio-custom"></span>
+                                    <span class="radio-text">فردي</span>
+                                </label>
+                                <label>
+                                    <input type="radio" name="playType" value="multi" ${session.play_type === 'multi' ? 'checked' : ''} disabled>
+                                    <span class="radio-custom"></span>
+                                    <span class="radio-text">متعدد</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            ` : ''}
+            
+            <div class="modal-section bofeih-section">
+                <div class="modal-section-title">
+                    <i class="fas fa-coffee"></i>
+                    البوفيه
+                </div>
+                <button class="edit-btn open-bofeih-modal" id="editBofeihBtn">
+                    <i class="material-icons">edit</i>
+                    تعديل
+                </button>
+            </div>
+            
+            <div class="modal-footer-buttons">
+                <button class="btn-cancel-bottom" onclick="closeModal('invoiceBofeihModal')">
+                    <i class="fas fa-times"></i>
+                    إلغاء
+                </button>
+                ${isActive ? `
+                    <button class="btn-view-invoice" onclick="endSessionAndShowInvoice(${deviceId})">
+                        <i class="fas fa-file-invoice"></i>
+                        إنهاء وعرض الفاتورة
+                    </button>
+                ` : `
+                    <button class="btn-view-invoice" onclick="showDeviceInvoice(${deviceId})">
+                        <i class="fas fa-eye"></i>
+                        عرض الفاتورة
+                    </button>
+                `}
+            </div>
+        </div>
+    `;
+    
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // تحديث التايمر في المودال
+    if (isActive) {
+        updateModalTimer(deviceId, session);
     }
 }
 
-async function startSession() {
-    const form = document.getElementById('startSessionForm');
-    const playType = form.play_type.value;
+// مودال البوفيه المنفصل
+function openBofeihModal(deviceId) {
+    let modal = document.getElementById('bofeihDetailsModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'bofeihDetailsModal';
+        modal.className = 'modal';
+        document.body.appendChild(modal);
+    }
     
-    try {
-        const response = await sendRequest(`/api/devices/${currentEditingId}/start-session`, 'POST', { 
-            play_type: playType 
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-coffee"></i> إدارة البوفيه</h3>
+                <div class="device-id-circle">${deviceId}</div>
+                <span class="close-btn">&times;</span>
+            </div>
+            
+            <div class="buffet-content">
+                <div class="buffet-section">
+                    <h4>الأقسام</h4>
+                    <div class="category-list" id="modalBuffetCategoryList">
+                        <!-- سيتم ملؤها بواسطة JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="buffet-section">
+                    <h4>المنتجات</h4>
+                    <div class="product-grid" id="modalBuffetProductGrid">
+                        <!-- سيتم ملؤها بواسطة JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="buffet-section">
+                    <div class="order-summary">
+                        <h4>الطلبات الحالية</h4>
+                        <ul id="modalBuffetOrderList">
+                            <li class="no-items">لا توجد طلبات</li>
+                        </ul>
+                        <div class="summary-total">
+                            <span>الإجمالي:</span>
+                            <span id="modalBuffetTotal">0.00 ج</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel">إلغاء</button>
+                <button type="button" class="btn-save" onclick="saveModalBuffetOrder(${deviceId})">حفظ الطلبات</button>
+            </div>
+        </div>
+    `;
+    
+    modal.classList.add('active');
+    
+    // تحميل البيانات
+    renderModalBuffetCategories();
+    currentOrder = {};
+    updateModalOrderSummary();
+}
+
+function renderModalBuffetCategories() {
+    const container = document.getElementById('modalBuffetCategoryList');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    categories.forEach((category, index) => {
+        const btn = document.createElement('button');
+        btn.className = `category-btn ${index === 0 ? 'active' : ''}`;
+        btn.textContent = category.name;
+        btn.dataset.categoryId = category.id;
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#modalBuffetCategoryList .category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderModalBuffetProducts(category.id);
         });
-        showNotification('تم بدء الجلسة بنجاح', 'success');
-        closeModal('startSessionModal');
-        loadPageData();
-    } catch (error) {
-        showNotification('فشل في بدء الجلسة: ' + error.message, 'error');
+        container.appendChild(btn);
+    });
+    
+    if (categories.length > 0) {
+        renderModalBuffetProducts(categories[0].id);
     }
 }
 
-function addToOrder(productId, productName, price) {
+function renderModalBuffetProducts(categoryId) {
+    const container = document.getElementById('modalBuffetProductGrid');
+    if (!container) return;
+    
+    const categoryProducts = products.filter(p => p.category_id === categoryId);
+    container.innerHTML = '';
+    
+    categoryProducts.forEach(product => {
+        const productCard = document.createElement('div');
+        productCard.className = 'product-card';
+        productCard.innerHTML = `
+            <div class="product-icon">
+                <i class="${product.category?.icon_class || 'fas fa-box'}"></i>
+            </div>
+            <h4>${product.name}</h4>
+            <p class="price">${parseFloat(product.customer_price).toFixed(2)} ج</p>
+            <p class="stock">متوفر: ${product.stock_quantity} ${product.unit}</p>
+            <button class="add-to-order-btn" 
+                    onclick="addToModalOrder('${product.id}', '${product.name}', ${product.customer_price})"
+                    ${product.stock_quantity <= 0 ? 'disabled' : ''}>
+                <i class="fas fa-plus"></i>
+                إضافة
+            </button>
+        `;
+        container.appendChild(productCard);
+    });
+}
+
+function addToModalOrder(productId, productName, price) {
     if (currentOrder[productId]) {
         currentOrder[productId]++;
     } else {
         currentOrder[productId] = 1;
     }
-    updateOrderSummary();
+    updateModalOrderSummary();
+    playNotificationSound('notification');
     showNotification(`تم إضافة ${productName} إلى الطلب`, 'success');
 }
 
-function updateOrderSummary() {
-    const list = document.getElementById('buffetOrderList');
-    const total = document.getElementById('buffetTotal');
+function updateModalOrderSummary() {
+    const list = document.getElementById('modalBuffetOrderList');
+    const total = document.getElementById('modalBuffetTotal');
     
     if (!list || !total) return;
     
@@ -462,11 +665,11 @@ function updateOrderSummary() {
                 li.innerHTML = `
                     <span class="item-name">${product.name}</span>
                     <div class="item-controls">
-                        <button onclick="decreaseQuantity(${productId})" class="qty-btn">-</button>
+                        <button onclick="decreaseModalQuantity(${productId})" class="qty-btn">-</button>
                         <span class="quantity">${quantity}</span>
-                        <button onclick="increaseQuantity(${productId})" class="qty-btn">+</button>
+                        <button onclick="increaseModalQuantity(${productId})" class="qty-btn">+</button>
                         <span class="item-price">${itemTotal.toFixed(2)} ج</span>
-                        <button onclick="removeFromOrder(${productId})" class="remove-btn">
+                        <button onclick="removeFromModalOrder(${productId})" class="remove-btn">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -479,28 +682,34 @@ function updateOrderSummary() {
     total.textContent = totalAmount.toFixed(2) + ' ج';
 }
 
-function increaseQuantity(productId) {
+function increaseModalQuantity(productId) {
     currentOrder[productId]++;
-    updateOrderSummary();
+    updateModalOrderSummary();
 }
 
-function decreaseQuantity(productId) {
+function decreaseModalQuantity(productId) {
     if (currentOrder[productId] > 1) {
         currentOrder[productId]--;
     } else {
         delete currentOrder[productId];
     }
-    updateOrderSummary();
+    updateModalOrderSummary();
 }
 
-function removeFromOrder(productId) {
+function removeFromModalOrder(productId) {
     delete currentOrder[productId];
-    updateOrderSummary();
+    updateModalOrderSummary();
 }
 
-async function saveBuffetOrder() {
+async function saveModalBuffetOrder(deviceId) {
     if (Object.keys(currentOrder).length === 0) {
         showNotification('لم يتم إضافة أي طلبات', 'warning');
+        return;
+    }
+    
+    const device = devices.find(d => d.id === deviceId);
+    if (!device || !device.active_session) {
+        showNotification('لا توجد جلسة نشطة لهذا الجهاز', 'error');
         return;
     }
     
@@ -510,33 +719,100 @@ async function saveBuffetOrder() {
     }));
     
     try {
-        await sendRequest(`/api/sessions/${currentSessionId}/add-order`, 'POST', { items });
+        await sendRequest(`/api/sessions/${device.active_session.id}/add-order`, 'POST', { items });
+        playNotificationSound('success');
         showNotification('تمت إضافة الطلبات للفاتورة', 'success');
-        closeModal('buffetModal');
+        closeModal('bofeihDetailsModal');
         loadPageData();
         currentOrder = {};
     } catch (error) {
+        playNotificationSound('error');
         showNotification('فشل في إضافة الطلبات: ' + error.message, 'error');
     }
 }
 
-async function endSession(sessionId) {
-    try {
-        await sendRequest(`/api/sessions/${sessionId}/end`, 'POST');
-        showNotification('تم إنهاء الجلسة وحفظ الفاتورة', 'success');
-        loadPageData();
-    } catch (error) {
-        showNotification('فشل في إنهاء الجلسة: ' + error.message, 'error');
+function updateModalTimer(deviceId, session) {
+    const updateTimer = () => {
+        const startTime = new Date(session.start_time);
+        const now = new Date();
+        const diff = now - startTime;
+        
+        const hours = Math.floor(diff / 3600000);
+        const minutes = Math.floor((diff % 3600000) / 60000);
+        
+        const hoursEl = document.getElementById(`modal-hours-${deviceId}`);
+        const minutesEl = document.getElementById(`modal-minutes-${deviceId}`);
+        
+        if (hoursEl) hoursEl.textContent = String(hours).padStart(2, '0');
+        if (minutesEl) minutesEl.textContent = String(minutes).padStart(2, '0');
+    };
+    
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    
+    // تنظيف المؤقت عند إغلاق المودال
+    const modal = document.getElementById('invoiceBofeihModal');
+    if (modal) {
+        modal.addEventListener('hidden', () => clearInterval(interval), { once: true });
     }
 }
 
-async function deleteDevice(deviceId) {
+async function endSessionAndShowInvoice(deviceId) {
+    const device = devices.find(d => d.id === deviceId);
+    if (!device || !device.active_session) {
+        showNotification('لا توجد جلسة نشطة', 'error');
+        return;
+    }
+    
+    if (confirm('هل أنت متأكد من إنهاء هذه الجلسة وإصدار الفاتورة؟')) {
+        try {
+            await sendRequest(`/api/sessions/${device.active_session.id}/end`, 'POST');
+            playNotificationSound('success');
+            showNotification('تم إنهاء الجلسة وحفظ الفاتورة', 'success');
+            closeModal('invoiceBofeihModal');
+            loadPageData();
+        } catch (error) {
+            playNotificationSound('error');
+            showNotification('فشل في إنهاء الجلسة: ' + error.message, 'error');
+        }
+    }
+}
+
+async function saveDevice() {
+    const form = document.getElementById('addDeviceForm');
+    const data = {
+        name: form.deviceName.value,
+        device_type_id: form.deviceTypeSelect.value
+    };
+    
     try {
-        await sendRequest(`/api/devices/${deviceId}`, 'DELETE');
-        showNotification('تم حذف الجهاز بنجاح', 'success');
+        await sendRequest('/api/devices', 'POST', data);
+        playNotificationSound('success');
+        showNotification('تم إضافة الجهاز بنجاح', 'success');
+        closeModal('addDeviceModal');
+        form.reset();
         loadPageData();
     } catch (error) {
-        showNotification('فشل في حذف الجهاز: ' + error.message, 'error');
+        playNotificationSound('error');
+        showNotification('فشل في إضافة الجهاز: ' + error.message, 'error');
+    }
+}
+
+async function startSession() {
+    const form = document.getElementById('startSessionForm');
+    const playType = form.play_type.value;
+    
+    try {
+        const response = await sendRequest(`/api/devices/${currentEditingId}/start-session`, 'POST', { 
+            play_type: playType 
+        });
+        playNotificationSound('success');
+        showNotification('تم بدء الجلسة بنجاح', 'success');
+        closeModal('startSessionModal');
+        loadPageData();
+    } catch (error) {
+        playNotificationSound('error');
+        showNotification('فشل في بدء الجلسة: ' + error.message, 'error');
     }
 }
 
@@ -633,10 +909,12 @@ function openEditTimeModal(session) {
         
         try {
             await sendRequest(`/api/sessions/${session.id}/update-time`, 'POST', { hours, minutes });
+            playNotificationSound('success');
             showNotification('تم تحديث الوقت بنجاح', 'success');
             closeModal('editTimeModal');
             loadPageData();
         } catch (error) {
+            playNotificationSound('error');
             showNotification('فشل في تحديث الوقت: ' + error.message, 'error');
         }
     });
@@ -693,6 +971,18 @@ function showDeviceDetails(device) {
         </div>
     `;
     document.body.appendChild(modal);
+}
+
+async function deleteDevice(deviceId) {
+    try {
+        await sendRequest(`/api/devices/${deviceId}`, 'DELETE');
+        playNotificationSound('success');
+        showNotification('تم حذف الجهاز بنجاح', 'success');
+        loadPageData();
+    } catch (error) {
+        playNotificationSound('error');
+        showNotification('فشل في حذف الجهاز: ' + error.message, 'error');
+    }
 }
 
 function switchTab(tabId) {
@@ -835,3 +1125,20 @@ function filterDevices(searchTerm) {
         }
     });
 }
+
+// ربط الأحداث العامة للمودالات
+document.addEventListener('click', function(e) {
+    // فتح مودال البوفيه
+    if (e.target.closest('.open-bofeih-modal, #editBofeihBtn')) {
+        e.preventDefault();
+        const deviceId = document.querySelector('.device-id-in-modal')?.textContent;
+        if (deviceId) {
+            openBofeihModal(deviceId);
+        }
+    }
+    
+    // إغلاق مودال البوفيه
+    if (e.target.closest('#bofeihDetailsModal .close-btn, #bofeihDetailsModal .btn-cancel')) {
+        closeModal('bofeihDetailsModal');
+    }
+});

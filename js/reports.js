@@ -1,26 +1,11 @@
-// reports.js - ملف JavaScript لصفحة التقارير المتقدمة
+// reports.js - ملف JavaScript لصفحة التقارير المتقدمة والكاملة
 
 // متغيرات عامة
 let mainChart = null;
 let revenueDistributionChart = null;
 let expenseDistributionChart = null;
 let miniCharts = {};
-
-// بيانات وهمية للتجربة
-const sampleData = {
-    revenues: [
-        { date: '2025-01-15', name: 'فاتورة بيع', amount: 150, type: 'محل', employee: 'محمد حامد' },
-        { date: '2025-01-15', name: 'خدمة إنترنت', amount: 25, type: 'عميل', employee: 'أحمد علي' },
-        { date: '2025-01-16', name: 'فاتورة مشروبات', amount: 80, type: 'محل', employee: 'محمد حامد' },
-        { date: '2025-01-16', name: 'حجز تربيزة', amount: 50, type: 'عميل', employee: 'سارة محمد' },
-        { date: '2025-01-17', name: 'فاتورة طعام', amount: 120, type: 'محل', employee: 'محمد حامد' },
-    ],
-    expenses: [
-        { date: '2025-01-15', name: 'فاتورة كهرباء', amount: 200, type: 'مصروف ثابت', employee: 'محمد حامد' },
-        { date: '2025-01-16', name: 'شراء مواد خام', amount: 150, type: 'مصروف متغير', employee: 'أحمد علي' },
-        { date: '2025-01-17', name: 'صيانة أجهزة', amount: 100, type: 'مصروف متغير', employee: 'محمد حامد' },
-    ]
-};
+let notificationSounds = {};
 
 // تهيئة الصفحة عند التحميل
 document.addEventListener('DOMContentLoaded', function() {
@@ -28,14 +13,38 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof buildSidebar === 'function') {
         buildSidebar();
     }
-    initializeReportsPage();
+    initializePage();
     setupEventListeners();
     setDefaultDates();
+    initializeNotificationSounds();
 });
 
-// تهيئة صفحة التقارير
-function initializeReportsPage() {
-    // تحديث التاريخ الحالي
+// تهيئة الأصوات
+function initializeNotificationSounds() {
+    notificationSounds = {
+        success: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'),
+        error: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'),
+        notification: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT')
+    };
+}
+
+function playNotificationSound(type = 'notification') {
+    try {
+        if (notificationSounds[type]) {
+            notificationSounds[type].volume = 0.3;
+            notificationSounds[type].play().catch(e => console.log('Sound play failed:', e));
+        }
+    } catch (e) {
+        console.log('Sound error:', e);
+    }
+}
+
+// تهيئة الصفحة
+function initializePage() {
+    // إضافة أيقونات الإضافة للبطاقات
+    addPlusIcons();
+    
+    // تحديث التاريخ
     updateCurrentDate();
     
     // إخفاء نتائج التقرير في البداية
@@ -160,6 +169,7 @@ function validateDateRange() {
         const to = new Date(toDate.value);
         
         if (from > to) {
+            playNotificationSound('error');
             showNotification('تاريخ البداية يجب أن يكون قبل تاريخ النهاية', 'error');
             generateBtn.disabled = true;
             return false;
@@ -173,7 +183,7 @@ function validateDateRange() {
 }
 
 // إنشاء التقرير
-function generateReport() {
+async function generateReport() {
     if (!validateDateRange()) {
         return;
     }
@@ -182,6 +192,7 @@ function generateReport() {
     const toDate = document.getElementById('toDate').value;
     
     if (!fromDate || !toDate) {
+        playNotificationSound('error');
         showNotification('يرجى تحديد فترة زمنية صحيحة', 'warning');
         return;
     }
@@ -189,68 +200,100 @@ function generateReport() {
     // إظهار حالة التحميل
     showLoadingState();
     
-    // محاكاة تحميل البيانات
-    setTimeout(() => {
-        const reportData = generateReportData(fromDate, toDate);
+    try {
+        // جلب البيانات الفعلية من الخادم
+        const reportData = await fetchReportData(fromDate, toDate);
         
         if (reportData.hasData) {
             displayReportResults(reportData);
+            playNotificationSound('success');
             showNotification('تم إنشاء التقرير بنجاح', 'success');
         } else {
             showNoDataState();
             showNotification('لا توجد بيانات للفترة المحددة', 'info');
         }
-    }, 2000);
+    } catch (error) {
+        playNotificationSound('error');
+        showNotification('فشل في إنشاء التقرير: ' + error.message, 'error');
+        showNoDataState();
+    }
 }
 
-// إنشاء بيانات التقرير
-function generateReportData(fromDate, toDate) {
-    const from = new Date(fromDate);
-    const to = new Date(toDate);
-    
-    // فلترة البيانات حسب التاريخ
-    const filteredRevenues = sampleData.revenues.filter(item => {
-        const itemDate = new Date(item.date);
-        return itemDate >= from && itemDate <= to;
-    });
-    
-    const filteredExpenses = sampleData.expenses.filter(item => {
-        const itemDate = new Date(item.date);
-        return itemDate >= from && itemDate <= to;
-    });
-    
-    // حساب الإجماليات
-    const totalRevenues = filteredRevenues.reduce((sum, item) => sum + item.amount, 0);
-    const totalExpenses = filteredExpenses.reduce((sum, item) => sum + item.amount, 0);
-    const netProfit = totalRevenues - totalExpenses;
-    
-    // إنشاء بيانات للرسوم البيانية
-    const chartData = generateChartData(filteredRevenues, filteredExpenses, from, to);
-    
-    return {
-        hasData: filteredRevenues.length > 0 || filteredExpenses.length > 0,
-        summary: {
-            totalRevenues,
-            totalExpenses,
-            netProfit,
-            revenuesTrend: calculateTrend(totalRevenues, 'revenues'),
-            expensesTrend: calculateTrend(totalExpenses, 'expenses'),
-            profitTrend: calculateTrend(netProfit, 'profit')
-        },
-        details: {
-            revenues: filteredRevenues,
-            expenses: filteredExpenses,
-            avgDailyRevenue: totalRevenues / getDaysBetween(from, to),
-            totalTransactions: filteredRevenues.length + filteredExpenses.length,
-            profitMargin: totalRevenues > 0 ? ((netProfit / totalRevenues) * 100) : 0,
-            growthRate: calculateGrowthRate(totalRevenues),
-            bestSalesDay: findBestSalesDay(filteredRevenues),
-            highestDailyRevenue: findHighestDailyRevenue(filteredRevenues),
-            lowestDailyRevenue: findLowestDailyRevenue(filteredRevenues),
-            topExpenseCategory: findTopExpenseCategory(filteredExpenses)
-        },
-        chartData
-    };
+// جلب بيانات التقرير من الخادم
+async function fetchReportData(fromDate, toDate) {
+    try {
+        // جلب بيانات الشيفتات للفترة المحددة
+        const response = await sendRequest('/api/shifts/report/period', 'POST', {
+            from_date: fromDate,
+            to_date: toDate
+        });
+        
+        if (!response || !response.shifts) {
+            return { hasData: false };
+        }
+        
+        const shifts = response.shifts;
+        let totalRevenues = 0;
+        let totalExpenses = 0;
+        let revenues = [];
+        let expenses = [];
+        
+        // معالجة بيانات الشيفتات
+        shifts.forEach(shift => {
+            if (shift.transactions) {
+                shift.transactions.forEach(transaction => {
+                    const transactionData = {
+                        date: transaction.created_at.split('T')[0],
+                        name: transaction.description,
+                        amount: parseFloat(transaction.amount),
+                        type: transaction.category,
+                        employee: transaction.user?.name || 'غير محدد'
+                    };
+                    
+                    if (transaction.type === 'revenue') {
+                        revenues.push(transactionData);
+                        totalRevenues += transactionData.amount;
+                    } else if (transaction.type === 'expense') {
+                        expenses.push(transactionData);
+                        totalExpenses += transactionData.amount;
+                    }
+                });
+            }
+        });
+        
+        const netProfit = totalRevenues - totalExpenses;
+        
+        // إنشاء بيانات للرسوم البيانية
+        const chartData = generateChartData(revenues, expenses, new Date(fromDate), new Date(toDate));
+        
+        return {
+            hasData: revenues.length > 0 || expenses.length > 0,
+            summary: {
+                totalRevenues,
+                totalExpenses,
+                netProfit,
+                revenuesTrend: calculateTrend(totalRevenues, 'revenues'),
+                expensesTrend: calculateTrend(totalExpenses, 'expenses'),
+                profitTrend: calculateTrend(netProfit, 'profit')
+            },
+            details: {
+                revenues: revenues,
+                expenses: expenses,
+                avgDailyRevenue: totalRevenues / getDaysBetween(new Date(fromDate), new Date(toDate)),
+                totalTransactions: revenues.length + expenses.length,
+                profitMargin: totalRevenues > 0 ? ((netProfit / totalRevenues) * 100) : 0,
+                growthRate: calculateGrowthRate(totalRevenues),
+                bestSalesDay: findBestSalesDay(revenues),
+                highestDailyRevenue: findHighestDailyRevenue(revenues),
+                lowestDailyRevenue: findLowestDailyRevenue(revenues),
+                topExpenseCategory: findTopExpenseCategory(expenses)
+            },
+            chartData
+        };
+    } catch (error) {
+        console.error('Error fetching report data:', error);
+        throw error;
+    }
 }
 
 // حساب الاتجاه (محاكاة)
@@ -431,20 +474,30 @@ function displayReportResults(data) {
 // تحديث البطاقات المالية
 function updateFinancialCards(summary) {
     // إجمالي الإيرادات
-    document.getElementById('totalRevenues').textContent = summary.totalRevenues.toFixed(2);
-    document.getElementById('revenuesTrend').textContent = `${summary.revenuesTrend > 0 ? '+' : ''}${summary.revenuesTrend.toFixed(1)}%`;
+    const totalRevenuesEl = document.getElementById('totalRevenues');
+    const revenuesTrendEl = document.getElementById('revenuesTrend');
+    
+    if (totalRevenuesEl) totalRevenuesEl.textContent = summary.totalRevenues.toFixed(2);
+    if (revenuesTrendEl) revenuesTrendEl.textContent = `${summary.revenuesTrend > 0 ? '+' : ''}${summary.revenuesTrend.toFixed(1)}%`;
     
     // إجمالي المصروفات
-    document.getElementById('totalExpenses').textContent = summary.totalExpenses.toFixed(2);
-    document.getElementById('expensesTrend').textContent = `${summary.expensesTrend > 0 ? '+' : ''}${summary.expensesTrend.toFixed(1)}%`;
+    const totalExpensesEl = document.getElementById('totalExpenses');
+    const expensesTrendEl = document.getElementById('expensesTrend');
+    
+    if (totalExpensesEl) totalExpensesEl.textContent = summary.totalExpenses.toFixed(2);
+    if (expensesTrendEl) expensesTrendEl.textContent = `${summary.expensesTrend > 0 ? '+' : ''}${summary.expensesTrend.toFixed(1)}%`;
     
     // صافي الربح
-    document.getElementById('netProfit').textContent = summary.netProfit.toFixed(2);
+    const netProfitEl = document.getElementById('netProfit');
     const profitTrendElement = document.getElementById('profitTrend');
-    profitTrendElement.innerHTML = `
-        <i class="fas fa-${summary.netProfit > 0 ? 'arrow-up' : summary.netProfit < 0 ? 'arrow-down' : 'equals'}"></i>
-        <span>${summary.profitTrend > 0 ? '+' : ''}${summary.profitTrend.toFixed(1)}%</span>
-    `;
+    
+    if (netProfitEl) netProfitEl.textContent = summary.netProfit.toFixed(2);
+    if (profitTrendElement) {
+        profitTrendElement.innerHTML = `
+            <i class="fas fa-${summary.netProfit > 0 ? 'arrow-up' : summary.netProfit < 0 ? 'arrow-down' : 'equals'}"></i>
+            <span>${summary.profitTrend > 0 ? '+' : ''}${summary.profitTrend.toFixed(1)}%</span>
+        `;
+    }
     
     // تحديث فئات الاتجاه
     updateTrendClasses(summary);
@@ -452,40 +505,58 @@ function updateFinancialCards(summary) {
 
 // تحديث فئات الاتجاه
 function updateTrendClasses(summary) {
-    const revenuesTrendElement = document.querySelector('#revenuesTrend').parentElement;
-    const expensesTrendElement = document.querySelector('#expensesTrend').parentElement;
+    const revenuesTrendElement = document.querySelector('#revenuesTrend')?.parentElement;
+    const expensesTrendElement = document.querySelector('#expensesTrend')?.parentElement;
     const profitTrendElement = document.getElementById('profitTrend');
     
     // إزالة الفئات القديمة
     [revenuesTrendElement, expensesTrendElement, profitTrendElement].forEach(el => {
-        el.classList.remove('positive', 'negative');
+        if (el) {
+            el.classList.remove('positive', 'negative');
+        }
     });
     
     // إضافة الفئات الجديدة
-    if (summary.revenuesTrend > 0) revenuesTrendElement.classList.add('positive');
-    else if (summary.revenuesTrend < 0) revenuesTrendElement.classList.add('negative');
+    if (revenuesTrendElement) {
+        if (summary.revenuesTrend > 0) revenuesTrendElement.classList.add('positive');
+        else if (summary.revenuesTrend < 0) revenuesTrendElement.classList.add('negative');
+    }
     
-    if (summary.expensesTrend > 0) expensesTrendElement.classList.add('negative');
-    else if (summary.expensesTrend < 0) expensesTrendElement.classList.add('positive');
+    if (expensesTrendElement) {
+        if (summary.expensesTrend > 0) expensesTrendElement.classList.add('negative');
+        else if (summary.expensesTrend < 0) expensesTrendElement.classList.add('positive');
+    }
     
-    if (summary.profitTrend > 0) profitTrendElement.classList.add('positive');
-    else if (summary.profitTrend < 0) profitTrendElement.classList.add('negative');
+    if (profitTrendElement) {
+        if (summary.profitTrend > 0) profitTrendElement.classList.add('positive');
+        else if (summary.profitTrend < 0) profitTrendElement.classList.add('negative');
+    }
 }
 
 // تحديث التحليل التفصيلي
 function updateDetailedAnalysis(details) {
-    document.getElementById('avgDailyRevenue').textContent = `${details.avgDailyRevenue.toFixed(2)} ج`;
-    document.getElementById('totalTransactions').textContent = details.totalTransactions;
-    document.getElementById('profitMargin').textContent = `${details.profitMargin.toFixed(1)}%`;
-    document.getElementById('growthRate').textContent = `${details.growthRate > 0 ? '+' : ''}${details.growthRate.toFixed(1)}%`;
+    const avgDailyRevenueEl = document.getElementById('avgDailyRevenue');
+    const totalTransactionsEl = document.getElementById('totalTransactions');
+    const profitMarginEl = document.getElementById('profitMargin');
+    const growthRateEl = document.getElementById('growthRate');
+    
+    if (avgDailyRevenueEl) avgDailyRevenueEl.textContent = `${details.avgDailyRevenue.toFixed(2)} ج`;
+    if (totalTransactionsEl) totalTransactionsEl.textContent = details.totalTransactions;
+    if (profitMarginEl) profitMarginEl.textContent = `${details.profitMargin.toFixed(1)}%`;
+    if (growthRateEl) growthRateEl.textContent = `${details.growthRate > 0 ? '+' : ''}${details.growthRate.toFixed(1)}%`;
 }
 
 // تحديث مؤشرات الأداء
 function updatePerformanceIndicators(details) {
-    document.getElementById('bestSalesDay').textContent = details.bestSalesDay;
-    document.getElementById('highestDailyRevenue').textContent = `${details.highestDailyRevenue.toFixed(2)} ج`;
-    document.getElementById('lowestDailyRevenue').textContent = `${details.lowestDailyRevenue.toFixed(2)} ج`;
-    document.getElementById('topExpenseCategory').textContent = details.topExpenseCategory;
+    const bestSalesDayEl = document.getElementById('bestSalesDay');
+    const highestDailyRevenueEl = document.getElementById('highestDailyRevenue');
+    const lowestDailyRevenueEl = document.getElementById('lowestDailyRevenue');
+    const topExpenseCategoryEl = document.getElementById('topExpenseCategory');
+    
+    if (bestSalesDayEl) bestSalesDayEl.textContent = details.bestSalesDay;
+    if (highestDailyRevenueEl) highestDailyRevenueEl.textContent = `${details.highestDailyRevenue.toFixed(2)} ج`;
+    if (lowestDailyRevenueEl) lowestDailyRevenueEl.textContent = `${details.lowestDailyRevenue.toFixed(2)} ج`;
+    if (topExpenseCategoryEl) topExpenseCategoryEl.textContent = details.topExpenseCategory;
 }
 
 // إنشاء الرسوم البيانية
@@ -497,13 +568,14 @@ function createCharts(chartData) {
 
 // إنشاء الرسم البياني الرئيسي
 function createMainChart(chartData) {
-    const ctx = document.getElementById('mainChart').getContext('2d');
+    const ctx = document.getElementById('mainChart');
+    if (!ctx) return;
     
     if (mainChart) {
         mainChart.destroy();
     }
     
-    mainChart = new Chart(ctx, {
+    mainChart = new Chart(ctx.getContext('2d'), {
         type: 'line',
         data: {
             labels: chartData.labels,
@@ -593,86 +665,88 @@ function createMainChart(chartData) {
 // إنشاء رسوم التوزيع
 function createDistributionCharts(chartData) {
     // رسم توزيع الإيرادات
-    const revenueCtx = document.getElementById('revenueDistributionChart').getContext('2d');
-    
-    if (revenueDistributionChart) {
-        revenueDistributionChart.destroy();
-    }
-    
-    revenueDistributionChart = new Chart(revenueCtx, {
-        type: 'doughnut',
-        data: {
-            labels: chartData.revenueDistribution.labels,
-            datasets: [{
-                data: chartData.revenueDistribution.data,
-                backgroundColor: [
-                    '#48bb78',
-                    '#38b2ac',
-                    '#667eea',
-                    '#ed8936'
-                ],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        usePointStyle: true,
-                        padding: 15,
-                        font: {
-                            family: 'Cairo',
-                            size: 11
+    const revenueCtx = document.getElementById('revenueDistributionChart');
+    if (revenueCtx) {
+        if (revenueDistributionChart) {
+            revenueDistributionChart.destroy();
+        }
+        
+        revenueDistributionChart = new Chart(revenueCtx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: chartData.revenueDistribution.labels,
+                datasets: [{
+                    data: chartData.revenueDistribution.data,
+                    backgroundColor: [
+                        '#48bb78',
+                        '#38b2ac',
+                        '#667eea',
+                        '#ed8936'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: {
+                                family: 'Cairo',
+                                size: 11
+                            }
                         }
                     }
                 }
             }
-        }
-    });
+        });
+    }
     
     // رسم توزيع المصروفات
-    const expenseCtx = document.getElementById('expenseDistributionChart').getContext('2d');
-    
-    if (expenseDistributionChart) {
-        expenseDistributionChart.destroy();
-    }
-    
-    expenseDistributionChart = new Chart(expenseCtx, {
-        type: 'doughnut',
-        data: {
-            labels: chartData.expenseDistribution.labels,
-            datasets: [{
-                data: chartData.expenseDistribution.data,
-                backgroundColor: [
-                    '#f56565',
-                    '#fc8181',
-                    '#feb2b2',
-                    '#fed7d7'
-                ],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        usePointStyle: true,
-                        padding: 15,
-                        font: {
-                            family: 'Cairo',
-                            size: 11
+    const expenseCtx = document.getElementById('expenseDistributionChart');
+    if (expenseCtx) {
+        if (expenseDistributionChart) {
+            expenseDistributionChart.destroy();
+        }
+        
+        expenseDistributionChart = new Chart(expenseCtx.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: chartData.expenseDistribution.labels,
+                datasets: [{
+                    data: chartData.expenseDistribution.data,
+                    backgroundColor: [
+                        '#f56565',
+                        '#fc8181',
+                        '#feb2b2',
+                        '#fed7d7'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 15,
+                            font: {
+                                family: 'Cairo',
+                                size: 11
+                            }
                         }
                     }
                 }
             }
-        }
-    });
+        });
+    }
 }
 
 // إنشاء الرسوم البيانية المصغرة
@@ -744,7 +818,7 @@ function changeChartType(type) {
     document.querySelectorAll('.chart-type-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    document.querySelector(`[data-type="${type}"]`).classList.add('active');
+    document.querySelector(`[data-type="${type}"]`)?.classList.add('active');
     
     // تحديث نوع الرسم
     mainChart.config.type = type;
@@ -837,32 +911,42 @@ function switchTableTab(tab) {
     document.querySelectorAll('.table-tab').forEach(btn => {
         btn.classList.remove('active');
     });
-    document.querySelector(`[onclick="switchTableTab('${tab}')"]`).classList.add('active');
+    document.querySelector(`[onclick="switchTableTab('${tab}')"]`)?.classList.add('active');
     
     // تحديث المحتوى
     document.querySelectorAll('.table-content').forEach(content => {
         content.classList.remove('active');
     });
-    document.getElementById(`${tab}Table`).classList.add('active');
+    document.getElementById(`${tab}Table`)?.classList.add('active');
 }
 
 // إظهار حالة التحميل
 function showLoadingState() {
     hideAllStates();
-    document.getElementById('loadingState').style.display = 'flex';
+    const loadingState = document.getElementById('loadingState');
+    if (loadingState) {
+        loadingState.style.display = 'flex';
+    }
 }
 
 // إظهار حالة عدم وجود بيانات
 function showNoDataState() {
     hideAllStates();
-    document.getElementById('noDataState').style.display = 'flex';
+    const noDataState = document.getElementById('noDataState');
+    if (noDataState) {
+        noDataState.style.display = 'flex';
+    }
 }
 
 // إخفاء جميع الحالات
 function hideAllStates() {
-    document.getElementById('reportResults').style.display = 'none';
-    document.getElementById('loadingState').style.display = 'none';
-    document.getElementById('noDataState').style.display = 'none';
+    const reportResults = document.getElementById('reportResults');
+    const loadingState = document.getElementById('loadingState');
+    const noDataState = document.getElementById('noDataState');
+    
+    if (reportResults) reportResults.style.display = 'none';
+    if (loadingState) loadingState.style.display = 'none';
+    if (noDataState) noDataState.style.display = 'none';
 }
 
 // تصدير التقرير
@@ -881,6 +965,7 @@ function exportReport() {
         };
         
         console.log('تصدير التقرير:', reportData);
+        playNotificationSound('success');
         showNotification('تم تصدير التقرير بنجاح', 'success');
     }, 1500);
 }
@@ -923,6 +1008,53 @@ function refreshReports() {
 // تحديث التاريخ الحالي
 function updateCurrentDate() {
     // يمكن إضافة منطق تحديث التاريخ هنا إذا لزم الأمر
+}
+
+// إضافة أيقونات الزائد للبطاقات
+function addPlusIcons() {
+    // يمكن إضافة منطق هنا إذا لزم الأمر
+}
+
+// دوال المساعدة
+async function sendRequest(endpoint, method, body = null) {
+    try {
+        const options = { 
+            method, 
+            headers: { 
+                'Content-Type': 'application/json', 
+                'Accept': 'application/json' 
+            },
+            credentials: 'include'
+        };
+        
+        // إضافة التوكن
+        const token = sessionStorage.getItem('authToken');
+        if (token) {
+            options.headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        if (body) { 
+            options.body = JSON.stringify(body); 
+        }
+        
+        const response = await fetch(`http://127.0.0.1:8000${endpoint}`, options);
+        
+        if (response.status === 401 || response.status === 419) {
+            sessionStorage.clear();
+            window.location.href = '/tag/index.php';
+            return Promise.reject(new Error("انتهت صلاحية الجلسة"));
+        }
+        
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'حدث خطأ في الخادم');
+        }
+        
+        return response.status !== 204 ? await response.json() : null;
+    } catch (error) { 
+        console.error(`API Error on ${method} ${endpoint}:`, error);
+        throw error; 
+    }
 }
 
 // إظهار الإشعارات
@@ -974,55 +1106,3 @@ function showNotification(message, type = 'info') {
         }, 300);
     }, 4000);
 }
-
-// إضافة أنماط CSS للإشعارات
-const reportsStyles = document.createElement('style');
-reportsStyles.textContent = `
-    @keyframes slideInRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    
-    @keyframes slideOutRight {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-    
-    @media print {
-        .sidebar,
-        .sidebar-toggle,
-        .page-header .header-actions,
-        .date-range-section,
-        .no-data-state,
-        .loading-state {
-            display: none !important;
-        }
-        
-        .main-content {
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-        
-        .report-results {
-            box-shadow: none !important;
-            border: none !important;
-        }
-        
-        .chart-container {
-            break-inside: avoid;
-        }
-    }
-`;
-document.head.appendChild(reportsStyles);

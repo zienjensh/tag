@@ -107,4 +107,29 @@ class ShiftController extends Controller
             
         return response()->json($shifts);
     }
+    
+    /**
+     * جلب تقرير لفترة زمنية محددة
+     */
+    public function getReportForPeriod(Request $request)
+    {
+        $validated = $request->validate([
+            'from_date' => 'required|date',
+            'to_date' => 'required|date|after_or_equal:from_date'
+        ]);
+        
+        $shifts = Shift::whereBetween('start_time', [$validated['from_date'], $validated['to_date']])
+            ->where('status', 'closed')
+            ->with(['transactions.user'])
+            ->orderBy('start_time', 'desc')
+            ->get();
+            
+        return response()->json([
+            'shifts' => $shifts,
+            'period' => [
+                'from' => $validated['from_date'],
+                'to' => $validated['to_date']
+            ]
+        ]);
+    }
 }
