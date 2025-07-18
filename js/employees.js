@@ -27,7 +27,11 @@ function setupEventListeners() {
         if (!button) return;
 
         if (button.classList.contains('close-btn') || button.classList.contains('btn-cancel')) {
-            button.closest('.modal')?.classList.remove('active');
+            const modal = button.closest('.modal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
         }
 
         const { action, id } = button.dataset;

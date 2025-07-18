@@ -1,4 +1,4 @@
-// devices.js - النسخة المحدثة والكاملة
+// devices.js - النسخة المحدثة والكاملة مع ربط قواعد البيانات
 
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof buildSidebar === 'function') buildSidebar();
@@ -55,6 +55,18 @@ function setupEventListeners() {
         if (action && id) {
             handleDeviceAction(action, parseInt(id));
         }
+
+        // أزرار البوفيه
+        if (button.classList.contains('category-btn')) {
+            selectCategory(button);
+        }
+
+        if (button.classList.contains('add-to-order-btn')) {
+            const productId = button.dataset.productId;
+            const productName = button.dataset.productName;
+            const productPrice = parseFloat(button.dataset.productPrice);
+            addToOrder(productId, productName, productPrice);
+        }
     });
 }
 
@@ -88,7 +100,13 @@ function renderDeviceCards() {
     container.innerHTML = '';
     
     if (devices.length === 0) {
-        container.innerHTML = '<div class="no-data"><i class="fas fa-desktop"></i><h3>لا توجد أجهزة</h3><p>قم بإضافة جهاز جديد للبدء</p></div>';
+        container.innerHTML = `
+            <div class="no-data">
+                <i class="fas fa-desktop"></i>
+                <h3>لا توجد أجهزة</h3>
+                <p>قم بإضافة جهاز جديد للبدء</p>
+            </div>
+        `;
         return;
     }
 
@@ -108,7 +126,7 @@ function createDeviceCard(device) {
     
     card.innerHTML = `
         <div class="device-status-badge ${device.status}">
-            ${device.status === 'available' ? 'متاح' : 'مشغول'}
+            ${device.status === 'available' ? 'متاح' : device.status === 'busy' ? 'مشغول' : 'صيانة'}
         </div>
         
         <button class="device-delete-btn" data-action="delete" data-id="${device.id}" title="حذف الجهاز">
@@ -129,16 +147,15 @@ function createDeviceCard(device) {
             <div class="device-timer" id="timer-${device.id}">
                 <div class="timer-display">
                     <div class="timer-circle">
-                        <span class="timer-value">00:00:00</span>
+                        <span class="timer-value" id="timer-value-${device.id}">00:00:00</span>
+                    </div>
+                    <div class="timer-info">
+                        <span>نوع اللعب: ${session.play_type === 'single' ? 'فردي' : 'متعدد'}</span>
                     </div>
                 </div>
             </div>
             
             <div class="device-specs">
-                <div class="spec-item">
-                    <span class="spec-label">نوع اللعب:</span>
-                    <span class="spec-value">${session.play_type === 'single' ? 'فردي' : 'متعدد'}</span>
-                </div>
                 <div class="spec-item">
                     <span class="spec-label">تكلفة اللعب:</span>
                     <span class="spec-value" id="play-cost-${device.id}">0.00 ج</span>
@@ -146,6 +163,10 @@ function createDeviceCard(device) {
                 <div class="spec-item">
                     <span class="spec-label">تكلفة البوفيه:</span>
                     <span class="spec-value">${parseFloat(session.buffet_cost || 0).toFixed(2)} ج</span>
+                </div>
+                <div class="spec-item">
+                    <span class="spec-label">الإجمالي:</span>
+                    <span class="spec-value total-cost" id="total-cost-${device.id}">0.00 ج</span>
                 </div>
             </div>
         ` : `
@@ -177,6 +198,10 @@ function createDeviceCard(device) {
                 <button class="action-btn secondary" data-action="buffet" data-id="${device.id}">
                     <i class="fas fa-concierge-bell"></i>
                     <span>بوفيه</span>
+                </button>
+                <button class="action-btn warning" data-action="edit-time" data-id="${device.id}">
+                    <i class="fas fa-clock"></i>
+                    <span>تعديل الوقت</span>
                 </button>
                 <button class="action-btn danger" data-action="end" data-id="${device.id}">
                     <i class="fas fa-stop"></i>
@@ -218,11 +243,17 @@ function renderBuffetCategories() {
     if (!container) return;
     
     container.innerHTML = '';
-    categories.forEach(category => {
+    
+    if (categories.length === 0) {
+        container.innerHTML = '<p class="no-categories">لا توجد أقسام متاحة</p>';
+        return;
+    }
+
+    categories.forEach((category, index) => {
         const btn = document.createElement('button');
-        btn.className = 'category-btn';
+        btn.className = `category-btn ${index === 0 ? 'active' : ''}`;
         btn.textContent = category.name;
-        btn.onclick = () => renderBuffetProducts(category.id);
+        btn.dataset.categoryId = category.id;
         container.appendChild(btn);
     });
     
@@ -232,25 +263,41 @@ function renderBuffetCategories() {
     }
 }
 
+function selectCategory(button) {
+    // إزالة النشاط من جميع الأزرار
+    document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+    
+    const categoryId = parseInt(button.dataset.categoryId);
+    renderBuffetProducts(categoryId);
+}
+
 function renderBuffetProducts(categoryId) {
     const container = document.getElementById('buffetProductGrid');
     if (!container) return;
     
-    // تحديث الأزرار النشطة
-    document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    
     const categoryProducts = products.filter(p => p.category_id === categoryId);
     container.innerHTML = '';
     
+    if (categoryProducts.length === 0) {
+        container.innerHTML = '<p class="no-products">لا توجد منتجات في هذا القسم</p>';
+        return;
+    }
+
     categoryProducts.forEach(product => {
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
         productCard.innerHTML = `
+            <div class="product-icon">
+                <i class="${product.category?.icon_class || 'fas fa-box'}"></i>
+            </div>
             <h4>${product.name}</h4>
             <p class="price">${parseFloat(product.customer_price).toFixed(2)} ج</p>
             <p class="stock">متوفر: ${product.stock_quantity} ${product.unit}</p>
-            <button onclick="addToOrder(${product.id}, '${product.name}', ${product.customer_price})" 
+            <button class="add-to-order-btn" 
+                    data-product-id="${product.id}"
+                    data-product-name="${product.name}"
+                    data-product-price="${product.customer_price}"
                     ${product.stock_quantity <= 0 ? 'disabled' : ''}>
                 <i class="fas fa-plus"></i>
                 إضافة
@@ -301,7 +348,17 @@ function handleDeviceAction(action, id) {
 
     switch(action) {
         case 'start':
+            if (!activeShift) {
+                showNotification('يجب فتح شيفت أولاً لبدء الجلسة', 'warning');
+                return;
+            }
             document.getElementById('startSessionDeviceName').textContent = device.name;
+            document.getElementById('deviceTypePrices').innerHTML = `
+                <div class="price-info">
+                    <span>سعر الفردي: ${parseFloat(device.device_type?.single_price || 0).toFixed(2)} ج/ساعة</span>
+                    <span>سعر المتعدد: ${parseFloat(device.device_type?.multi_price || 0).toFixed(2)} ج/ساعة</span>
+                </div>
+            `;
             openModal('startSessionModal');
             break;
             
@@ -313,9 +370,15 @@ function handleDeviceAction(action, id) {
                 openModal('buffetModal');
             }
             break;
+
+        case 'edit-time':
+            if (device.active_session) {
+                openEditTimeModal(device.active_session);
+            }
+            break;
             
         case 'end':
-            if (confirm('هل أنت متأكد من إنهاء هذه الجلسة؟')) {
+            if (confirm('هل أنت متأكد من إنهاء هذه الجلسة وإصدار الفاتورة؟')) {
                 endSession(device.active_session.id);
             }
             break;
@@ -355,7 +418,7 @@ async function startSession() {
     const playType = form.play_type.value;
     
     try {
-        await sendRequest(`/api/devices/${currentEditingId}/start-session`, 'POST', { 
+        const response = await sendRequest(`/api/devices/${currentEditingId}/start-session`, 'POST', { 
             play_type: playType 
         });
         showNotification('تم بدء الجلسة بنجاح', 'success');
@@ -363,48 +426,6 @@ async function startSession() {
         loadPageData();
     } catch (error) {
         showNotification('فشل في بدء الجلسة: ' + error.message, 'error');
-    }
-}
-
-async function saveBuffetOrder() {
-    if (Object.keys(currentOrder).length === 0) {
-        showNotification('لم يتم إضافة أي طلبات', 'warning');
-        return;
-    }
-    
-    const items = Object.entries(currentOrder).map(([product_id, quantity]) => ({
-        product_id: parseInt(product_id),
-        quantity: quantity
-    }));
-    
-    try {
-        await sendRequest(`/api/sessions/${currentSessionId}/add-order`, 'POST', { items });
-        showNotification('تمت إضافة الطلبات للفاتورة', 'success');
-        closeModal('buffetModal');
-        loadPageData();
-        currentOrder = {};
-    } catch (error) {
-        showNotification('فشل في إضافة الطلبات: ' + error.message, 'error');
-    }
-}
-
-async function endSession(sessionId) {
-    try {
-        await sendRequest(`/api/sessions/${sessionId}/end`, 'POST');
-        showNotification('تم إنهاء الجلسة وحفظ الفاتورة', 'success');
-        loadPageData();
-    } catch (error) {
-        showNotification('فشل في إنهاء الجلسة: ' + error.message, 'error');
-    }
-}
-
-async function deleteDevice(deviceId) {
-    try {
-        await sendRequest(`/api/devices/${deviceId}`, 'DELETE');
-        showNotification('تم حذف الجهاز بنجاح', 'success');
-        loadPageData();
-    } catch (error) {
-        showNotification('فشل في حذف الجهاز: ' + error.message, 'error');
     }
 }
 
@@ -419,11 +440,10 @@ function addToOrder(productId, productName, price) {
 }
 
 function updateOrderSummary() {
-    const container = document.getElementById('buffetOrderSummary');
     const list = document.getElementById('buffetOrderList');
     const total = document.getElementById('buffetTotal');
     
-    if (!container || !list || !total) return;
+    if (!list || !total) return;
     
     list.innerHTML = '';
     let totalAmount = 0;
@@ -478,11 +498,54 @@ function removeFromOrder(productId) {
     updateOrderSummary();
 }
 
+async function saveBuffetOrder() {
+    if (Object.keys(currentOrder).length === 0) {
+        showNotification('لم يتم إضافة أي طلبات', 'warning');
+        return;
+    }
+    
+    const items = Object.entries(currentOrder).map(([product_id, quantity]) => ({
+        product_id: parseInt(product_id),
+        quantity: quantity
+    }));
+    
+    try {
+        await sendRequest(`/api/sessions/${currentSessionId}/add-order`, 'POST', { items });
+        showNotification('تمت إضافة الطلبات للفاتورة', 'success');
+        closeModal('buffetModal');
+        loadPageData();
+        currentOrder = {};
+    } catch (error) {
+        showNotification('فشل في إضافة الطلبات: ' + error.message, 'error');
+    }
+}
+
+async function endSession(sessionId) {
+    try {
+        await sendRequest(`/api/sessions/${sessionId}/end`, 'POST');
+        showNotification('تم إنهاء الجلسة وحفظ الفاتورة', 'success');
+        loadPageData();
+    } catch (error) {
+        showNotification('فشل في إنهاء الجلسة: ' + error.message, 'error');
+    }
+}
+
+async function deleteDevice(deviceId) {
+    try {
+        await sendRequest(`/api/devices/${deviceId}`, 'DELETE');
+        showNotification('تم حذف الجهاز بنجاح', 'success');
+        loadPageData();
+    } catch (error) {
+        showNotification('فشل في حذف الجهاز: ' + error.message, 'error');
+    }
+}
+
 function updateTimers() {
     devices.forEach(device => {
         if (device.status === 'busy' && device.active_session) {
-            const timerEl = document.getElementById(`timer-${device.id}`);
+            const timerEl = document.getElementById(`timer-value-${device.id}`);
             const playCostEl = document.getElementById(`play-cost-${device.id}`);
+            const totalCostEl = document.getElementById(`total-cost-${device.id}`);
             
             if (timerEl && playCostEl) {
                 const startTime = new Date(device.active_session.start_time);
@@ -493,10 +556,7 @@ function updateTimers() {
                 const minutes = Math.floor((diff % 3600000) / 60000);
                 const seconds = Math.floor((diff % 60000) / 1000);
                 
-                const timerValue = timerEl.querySelector('.timer-value');
-                if (timerValue) {
-                    timerValue.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-                }
+                timerEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
                 
                 // حساب التكلفة
                 const deviceType = device.device_type;
@@ -504,10 +564,80 @@ function updateTimers() {
                     const pricePerHour = device.active_session.play_type === 'single' 
                         ? deviceType.single_price 
                         : deviceType.multi_price;
-                    const cost = (diff / 3600000) * pricePerHour;
-                    playCostEl.textContent = `${cost.toFixed(2)} ج`;
+                    const playCost = (diff / 3600000) * pricePerHour;
+                    const buffetCost = parseFloat(device.active_session.buffet_cost || 0);
+                    const totalCost = playCost + buffetCost;
+                    
+                    playCostEl.textContent = `${playCost.toFixed(2)} ج`;
+                    if (totalCostEl) {
+                        totalCostEl.textContent = `${totalCost.toFixed(2)} ج`;
+                    }
                 }
             }
+        }
+    });
+}
+
+function openEditTimeModal(session) {
+    const modal = document.createElement('div');
+    modal.className = 'modal active';
+    modal.id = 'editTimeModal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-clock"></i> تعديل وقت الجلسة</h3>
+                <span class="close-btn" onclick="closeModal('editTimeModal')">&times;</span>
+            </div>
+            <form id="editTimeForm">
+                <div class="form-group">
+                    <label>الوقت الحالي للجلسة</label>
+                    <div class="current-time-display">
+                        <span id="currentSessionTime">جاري الحساب...</span>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editHours">الساعات</label>
+                        <input type="number" id="editHours" min="0" max="24" value="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editMinutes">الدقائق</label>
+                        <input type="number" id="editMinutes" min="0" max="59" value="0" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeModal('editTimeModal')">إلغاء</button>
+                    <button type="submit" class="btn-save">حفظ التعديل</button>
+                </div>
+            </form>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // حساب الوقت الحالي
+    const startTime = new Date(session.start_time);
+    const now = new Date();
+    const diff = now - startTime;
+    const hours = Math.floor(diff / 3600000);
+    const minutes = Math.floor((diff % 3600000) / 60000);
+    
+    document.getElementById('currentSessionTime').textContent = `${hours} ساعة و ${minutes} دقيقة`;
+    document.getElementById('editHours').value = hours;
+    document.getElementById('editMinutes').value = minutes;
+    
+    // معالج النموذج
+    document.getElementById('editTimeForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const hours = parseInt(document.getElementById('editHours').value);
+        const minutes = parseInt(document.getElementById('editMinutes').value);
+        
+        try {
+            await sendRequest(`/api/sessions/${session.id}/update-time`, 'POST', { hours, minutes });
+            showNotification('تم تحديث الوقت بنجاح', 'success');
+            closeModal('editTimeModal');
+            loadPageData();
+        } catch (error) {
+            showNotification('فشل في تحديث الوقت: ' + error.message, 'error');
         }
     });
 }
@@ -532,7 +662,7 @@ function showDeviceDetails(device) {
                 </div>
                 <div class="detail-item">
                     <span class="label">الحالة:</span>
-                    <span class="value status-${device.status}">${device.status === 'available' ? 'متاح' : 'مشغول'}</span>
+                    <span class="value status-${device.status}">${device.status === 'available' ? 'متاح' : device.status === 'busy' ? 'مشغول' : 'صيانة'}</span>
                 </div>
                 <div class="detail-item">
                     <span class="label">سعر الفردي:</span>
@@ -550,6 +680,10 @@ function showDeviceDetails(device) {
                     <div class="detail-item">
                         <span class="label">نوع اللعب:</span>
                         <span class="value">${device.active_session.play_type === 'single' ? 'فردي' : 'متعدد'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="label">تكلفة البوفيه:</span>
+                        <span class="value">${parseFloat(device.active_session.buffet_cost || 0).toFixed(2)} ج</span>
                     </div>
                 ` : ''}
             </div>
@@ -600,6 +734,11 @@ function closeModal(modalId) {
         // إعادة تعيين النماذج
         const form = modal.querySelector('form');
         if (form) form.reset();
+        
+        // إزالة المودالات المؤقتة
+        if (modalId === 'editTimeModal') {
+            modal.remove();
+        }
     }
 }
 
@@ -679,4 +818,20 @@ function showNotification(message, type = 'info') {
         container.classList.remove('show');
         setTimeout(() => container.remove(), 500);
     }, 4000);
+}
+
+// دالة البحث في الأجهزة
+function filterDevices(searchTerm) {
+    const cards = document.querySelectorAll('.device-card');
+    cards.forEach(card => {
+        const deviceName = card.querySelector('.device-info h3').textContent.toLowerCase();
+        const deviceType = card.querySelector('.device-info .device-id').textContent.toLowerCase();
+        
+        if (deviceName.includes(searchTerm.toLowerCase()) || 
+            deviceType.includes(searchTerm.toLowerCase())) {
+            card.style.display = 'flex';
+        } else {
+            card.style.display = 'none';
+        }
+    });
 }

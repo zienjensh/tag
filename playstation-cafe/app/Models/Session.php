@@ -35,6 +35,12 @@ class Session extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function sessionProducts()
+    {
+        return $this->hasMany(SessionProduct::class);
+    }
+
+    // علاقة للحصول على المنتجات مباشرة
     public function products()
     {
         return $this->belongsToMany(Product::class, 'session_products')

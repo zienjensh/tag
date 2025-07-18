@@ -41,7 +41,10 @@ class TransactionController extends Controller
             // تحميل بيانات المستخدم
             $transaction->load('user');
 
-            return response()->json($transaction, 201);
+            return response()->json([
+                'message' => 'تم حفظ المعاملة بنجاح',
+                'transaction' => $transaction
+            ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'فشل في حفظ المعاملة: ' . $e->getMessage()

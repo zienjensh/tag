@@ -55,7 +55,7 @@
 
     <!-- Modals -->
     <div id="addEmployeeModal" class="modal">
-        <div class="modal-content wide">
+        <div class="modal-content large-modal">
             <div class="modal-header"><h3><i class="fas fa-user-plus"></i> إضافة موظف جديد</h3><span class="close-btn">&times;</span></div>
             <form id="addEmployeeForm">
                 <div class="form-grid">
@@ -68,7 +68,7 @@
                 <hr>
                 <div class="permissions-section">
                     <h4>صلاحيات الوصول للصفحات</h4>
-                    <div class="pages-grid" id="addPermissionsGrid"></div>
+                    <div class="permissions-grid" id="addPermissionsGrid"></div>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn-cancel">إلغاء</button><button type="submit" class="btn-save">حفظ الموظف</button></div>
             </form>
@@ -76,7 +76,7 @@
     </div>
     
     <div id="editEmployeeModal" class="modal">
-        <div class="modal-content wide">
+        <div class="modal-content large-modal">
             <div class="modal-header"><h3><i class="fas fa-user-edit"></i> تعديل بيانات الموظف</h3><span class="close-btn">&times;</span></div>
             <form id="editEmployeeForm">
                  <div class="form-grid">
@@ -87,7 +87,7 @@
                 <hr>
                 <div class="permissions-section">
                     <h4>صلاحيات الوصول للصفحات</h4>
-                    <div class="pages-grid" id="editPermissionsGrid"></div>
+                    <div class="permissions-grid" id="editPermissionsGrid"></div>
                 </div>
                 <div class="modal-footer"><button type="button" class="btn-cancel">إلغاء</button><button type="submit" class="btn-save">حفظ التعديلات</button></div>
             </form>

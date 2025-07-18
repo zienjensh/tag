@@ -769,13 +769,13 @@ body {
 .permission-item input[type="checkbox"]:checked + .checkmark::after {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 0.5rem;
-    height: 0.5rem;
-    background: white;
-    border-radius: 2px;
+    top: 2px;
+    left: 6px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
 }
 
 .permission-item input[type="checkbox"]:checked ~ .permission-text {

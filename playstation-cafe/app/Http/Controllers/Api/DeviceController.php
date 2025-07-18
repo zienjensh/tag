@@ -23,37 +23,40 @@ class DeviceController extends Controller
     {
         try {
             $activeShift = Shift::where('status', 'active')->first();
-            if (!$activeShift) {
-                return response()->json(['error' => 'لا يوجد شيفت مفتوح'], 400);
-            }
-
+            
             // جلب الأجهزة مع العلاقات
-            $devices = Device::with(['deviceType', 'activeSession.products'])->get();
+            $devices = Device::with(['deviceType', 'activeSession.sessionProducts.product'])->get();
             
             // حساب الإحصائيات
             $totalDevices = $devices->count();
             $busyDevices = $devices->where('status', 'busy')->count();
             $availableDevices = $devices->where('status', 'available')->count();
             
-            // حساب إيرادات اليوم من الأجهزة
-            $todayRevenue = $activeShift->transactions()
-                ->where('type', 'revenue')
-                ->where('category', 'جهاز')
-                ->sum('amount');
+            // حساب إيرادات اليوم من الأجهزة (من الشيفت المفتوح فقط)
+            $todayRevenue = 0;
+            if ($activeShift) {
+                $todayRevenue = $activeShift->transactions()
+                    ->where('type', 'revenue')
+                    ->where('category', 'جهاز')
+                    ->sum('amount');
+            }
 
             // جلب فواتير الأجهزة للشيفت الحالي
-            $invoices = $activeShift->transactions()
-                ->where('type', 'revenue')
-                ->where('category', 'جهاز')
-                ->with('user')
-                ->latest()
-                ->get();
+            $invoices = [];
+            if ($activeShift) {
+                $invoices = $activeShift->transactions()
+                    ->where('type', 'revenue')
+                    ->where('category', 'جهاز')
+                    ->with('user')
+                    ->latest()
+                    ->get();
+            }
 
             return response()->json([
                 'devices' => $devices,
                 'deviceTypes' => DeviceType::all(),
                 'categories' => Category::all(),
-                'products' => Product::with('category')->get(),
+                'products' => Product::with('category')->where('stock_quantity', '>', 0)->get(),
                 'shift' => $activeShift,
                 'stats' => [
                     'totalDevices' => $totalDevices,
@@ -66,6 +69,14 @@ class DeviceController extends Controller
         } catch (\Exception $e) {
             return response()->json(['error' => 'فشل في تحميل البيانات: ' . $e->getMessage()], 500);
         }
+    }
+
+    /**
+     * عرض جميع الأجهزة
+     */
+    public function index()
+    {
+        return response()->json(Device::with(['deviceType', 'activeSession'])->get());
     }
 
     /**
@@ -96,7 +107,10 @@ class DeviceController extends Controller
         ]);
 
         try {
-            $activeShift = Shift::where('status', 'active')->firstOrFail();
+            $activeShift = Shift::where('status', 'active')->first();
+            if (!$activeShift) {
+                return response()->json(['message' => 'لا يوجد شيفت مفتوح. يرجى فتح شيفت أولاً.'], 400);
+            }
             
             if ($device->status !== 'available') {
                 return response()->json(['message' => 'هذا الجهاز غير متاح حالياً.'], 409);
@@ -119,7 +133,7 @@ class DeviceController extends Controller
             
             return response()->json([
                 'message' => 'تم بدء الجلسة بنجاح',
-                'device' => $device->load(['deviceType', 'activeSession'])
+                'device' => $device->fresh()->load(['deviceType', 'activeSession'])
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'فشل في بدء الجلسة: ' . $e->getMessage()], 500);
@@ -152,7 +166,8 @@ class DeviceController extends Controller
                     $totalPrice = $product->customer_price * $item['quantity'];
                     
                     // إضافة المنتج للجلسة
-                    $session->products()->attach($item['product_id'], [
+                    $session->sessionProducts()->create([
+                        'product_id' => $item['product_id'],
                         'quantity' => $item['quantity'],
                         'price_per_unit' => $product->customer_price,
                         'total_price' => $totalPrice
@@ -170,7 +185,7 @@ class DeviceController extends Controller
             
             return response()->json([
                 'message' => 'تم إضافة الطلبات بنجاح',
-                'session' => $session->load('products')
+                'session' => $session->fresh()->load('sessionProducts.product')
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'فشل في إضافة الطلبات: ' . $e->getMessage()], 500);
@@ -183,7 +198,10 @@ class DeviceController extends Controller
     public function endSession(Session $session)
     {
         try {
-            $activeShift = Shift::where('status', 'active')->firstOrFail();
+            $activeShift = Shift::where('status', 'active')->first();
+            if (!$activeShift) {
+                return response()->json(['message' => 'لا يوجد شيفت مفتوح'], 400);
+            }
 
             DB::transaction(function () use ($session, $activeShift) {
                 // حساب مدة اللعب والتكلفة
@@ -215,7 +233,7 @@ class DeviceController extends Controller
                     'user_id' => Auth::id(),
                     'type' => 'revenue',
                     'category' => 'جهاز',
-                    'description' => "فاتورة جهاز {$session->device->name} - جلسة رقم {$session->id}",
+                    'description' => "فاتورة جهاز {$session->device->name} - مدة اللعب: " . number_format($durationInHours, 2) . " ساعة",
                     'amount' => $totalCost
                 ]);
             });
@@ -251,7 +269,7 @@ class DeviceController extends Controller
      */
     public function show(Device $device)
     {
-        return response()->json($device->load(['deviceType', 'activeSession.products']));
+        return response()->json($device->load(['deviceType', 'activeSession.sessionProducts.product']));
     }
 
     /**

@@ -40,7 +40,10 @@ class ShiftController extends Controller
                 'status' => 'active'
             ]);
 
-            return response()->json($shift, 201);
+            return response()->json([
+                'message' => 'تم بدء الشيفت بنجاح',
+                'shift' => $shift
+            ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'فشل في بدء الشيفت: ' . $e->getMessage()

@@ -54,10 +54,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Product restock
     Route::post('/products/{product}/restock', [ProductController::class, 'restock']);
     
-    // Device management
+    // Device management routes
     Route::get('/devices-page-data', [DeviceController::class, 'getPageData']);
     Route::apiResource('devices', DeviceController::class);
     Route::post('/devices/{device}/start-session', [DeviceController::class, 'startSession']);
     Route::post('/sessions/{session}/add-order', [DeviceController::class, 'addBuffetOrder']);
     Route::post('/sessions/{session}/end', [DeviceController::class, 'endSession']);
+    Route::post('/sessions/{session}/update-time', [DeviceController::class, 'updateSessionTime']);
 });

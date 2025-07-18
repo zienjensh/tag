@@ -1,624 +1,616 @@
-/* devices.css - النسخة النهائية مع !important لتصحيح ظهور المودالات */
-body {
-    font-family: 'Tajawal', sans-serif;
-    background-color: #F8F9FA; /* لون خلفية موحد وخفيف جداً */
-    direction: rtl; /* اتجاه من اليمين لليسار للعربية */
-    color: #343A40; /* لون نص أساسي داكن */
-}
-/* التنسيقات العامة للمحتوى (فوق التنسيقات المشتركة في money.css) */
-.content {
-    padding-top: 70px; /* لترك مسافة للـ sidebar-toggle العلوي */
-    padding-bottom: 20px;
-    padding-right: 20px; /* إضافة تباعد لليمين لتجنب التصاق المحتوى بالقائمة الجانبية */
-    padding-left: 20px; /* إضافة تباعد لليسار */
-}
+// public/js/customer.js - النسخة الكاملة والنهائية
 
-/* تنسيق شريط التحكم العلوي لصفحة الأجهزة */
-.devices-top-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #f0f0f0; /* لون خلفية خفيف */
-    padding: 15px 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+document.addEventListener('DOMContentLoaded', () => {
+    // التأكد من بناء القائمة الجانبية أولاً
+    if (typeof buildSidebar === 'function') {
+        buildSidebar();
+    }
+    loadPageData();
+    setupEventListeners();
+});
 
-.devices-top-controls .page-title {
-    font-size: 24px;
-    color: #333;
-    margin: 0;
-}
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
+let currentEditingId = null;
+let searchTimeout = null;
 
-.add-device-btn {
-    background-color: #28a745; /* زر أخضر لإضافة جهاز */
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background-color 0.3s ease;
-}
+function setupEventListeners() {
+    // الأزرار الثابتة
+    
+    // نماذج الإضافة والتعديل
+    document.getElementById('addCustomerForm')?.addEventListener('submit', e => { e.preventDefault(); saveCustomer(); });
 
-.add-device-btn:hover {
-    background-color: #218838;
-}
-
-/* تنسيق قسم التبويبات (الأجهزة / فواتير الأجهزة) - تم تعديلها لتكون أكثر تخصيصًا لـ devices.php */
-.devices-tab-controls { /* استخدام كلاس مختلف لتجنب التعارض مع tab-controls في money.css */
-
-    display: flex;
-    gap: 10px;
-    margin-bottom: 30px;
-    background-color: #E9ECEF;
-    border-radius: 10px;
-    padding: 5px;
-
-}
-
-.devices-tab-controls .devices-tab { /* استخدام كلاس مختلف */
-    flex: 1;
-    padding: 15px 0;
-    font-size: 18px;
-    font-weight: bold;
-    border: none;
-    border-bottom: 3px solid transparent;
-    background-color: transparent;
-    color: #555;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    text-align: center;
-    border-radius: 0;
-}
-
-.devices-tab-controls .devices-tab.active {
-    color: #ffffff;
-    background-color: #6a1b9a;
-    border-color: #6a1b9a;
-    box-shadow: 0 4px 10px rgba(106, 27, 154, 0.3);
-    border-radius: 15px;
-}
-
-.devices-tab-controls .devices-tab:hover {
-    color: #6a1b9a;
-    background-color: #f3e5f5;
-}
-
-/* تخطيط أقسام الأجهزة (الحاوي الرئيسي للأقسام) */
-.devices-sections-container {
-    display: flex;
-    flex-direction: column; /* الأقسام فوق بعضها البعض (غير متاح ثم متاح) */
-    gap: 30px; /* مسافة أكبر بين الأقسام */
-}
-
-/* تنسيق أقسام الأجهزة (غير المتاحة والمتاحة) */
-.devices-section {
-    background-color: #f8f8f8; /* خلفية خفيفة للقسم */
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05); /* ظل خفيف للقسم كله */
-}
-
-.section-title {
-    font-size: 20px;
-    font-weight: bold;
-    text-align: center;
-    padding: 10px 0;
-    margin-bottom: 20px;
-    color: #fff; /* لون النص أبيض */
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    /* العرض 100% ولكن مع تباعد على الجانبين */
-    width: calc(100% - 40px); /* يطابق عرض البادينج للـ device-section */
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 800px; /* يمكن تحديد أقصى عرض للعنوان */
-}
-
-.unavailable-title {
-    background-color: #e74c3c; /* لون أحمر للأجهزة غير المتاحة */
-}
-
-.available-title {
-    background-color: #28a745; /* لون أخضر للأجهزة المتاحة */
-}
-
-/* حاوية بطاقات الأجهزة - هذا هو المفتاح للتخطيط الأفقي */
-.device-cards-container {
-    display: flex; /* استخدام فليكس بوكس لترتيب البطاقات أفقيًا */
-    flex-wrap: wrap; /* للسماح للبطاقات بالانتقال إلى صف جديد إذا لم يكن هناك مساحة */
-    gap: 20px; /* مسافة بين البطاقات */
-    justify-content: center; /* توسيط البطاقات أفقيًا */
-    align-items: flex-start; /* محاذاة العناصر للأعلى في كل صف */
-}
-
-/* تنسيق بطاقة الجهاز */
+/* تحسينات للبطاقات */
 .device-card {
-    background-color: #fff; /* خلفية بيضاء */
-    border-radius: 15px; /* حواف أكثر دائرية */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* ظل أقوى قليلاً */
-    padding: 20px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.2s ease-in-out;
-    border: 1px solid #eee; /* حدود خفيفة */
-    width: 250px; /* عرض ثابت للبطاقة كما في الصورة */
-    flex-shrink: 0; /* لمنع البطاقات من الانكماش */
-    display: flex; /* لترتيب المحتوى الداخلي للبطاقة */
-    flex-direction: column; /* العناصر داخل البطاقة عموديًا */
-    align-items: center; /* توسيط محتوى البطاقة */
-    animation: fadeIn 0.5s ease-out; /* إضافة تأثير ظهور */
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
 }
 
-.device-card:hover {
-    transform: translateY(-5px) scale(1.02); /* تأثير رفع وتكبير خفيف */
-    box-shadow: 0 8px 25px rgba(0,0,0,0.25); /* ظل أقوى عند التحويم */
+.device-card.available {
+    border-left-color: #28a745;
 }
 
-/* ID الجهاز */
-.device-id-container {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    display: flex;
-    align-items: baseline;
-    color: #4CAF50; /* لون أخضر داكن للـ ID */
-    font-size: 14px;
-    font-weight: bold;
-    gap: 3px; /* مسافة بين ID: والرقم */
+.device-card.busy {
+    border-left-color: #dc3545;
+    background: linear-gradient(135deg, #fff 0%, #fff5f5 100%);
 }
 
-.device-id-label {
-    color: #666; /* لون مختلف لـ ID: */
-    font-size: 13px;
-    font-weight: normal;
+.device-card.maintenance {
+    border-left-color: #ffc107;
+    opacity: 0.7;
 }
 
-.device-id {
-    font-size: 18px; /* حجم أكبر لرقم الـ ID */
-    color: #4CAF50; /* لون أخضر لرقم الـ ID */
-}
-
-
-/* رأس البطاقة (الشعار والنوع) */
-.device-header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin-top: 10px; /* مسافة من الأعلى بعد الـ ID */
-    margin-bottom: 20px;
-}
-
-.device-logo {
-    width: 70px; /* حجم الشعار */
-    height: 70px;
-    object-fit: contain;
-    margin-bottom: 5px;
-}
-
-.device-type {
-    font-size: 20px;
-    font-weight: bold;
-    color: #333;
-}
-
-/* تنسيق قسم المؤقت لبطاقات الأجهزة غير المتاحة (المشغولة) */
-.device-card.unavailable .timer-section {
-    display: flex; /* لتصنيف أيقونة M ودوائر الوقت أفقيًا */
-    justify-content: center; /* توسيط المجموعات */
-    align-items: center;
-    gap: 10px; /* مسافة بين M والدوائر، وبين الدوائر نفسها */
-    margin-bottom: 25px; /* مسافة قبل الأزرار */
-    background-color: #6a1b9a; /* لون بنفسجي لخلفية قسم المؤقت */
-    border-radius: 10px; /* حواف دائرية لخلفية المؤقت */
-    padding: 10px 15px; /* تباعد داخلي */
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); /* ظل داخلي */
-}
-
-.timer-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.m-icon-wrapper {
-    background-color: white;
-    border-radius: 50%;
-    width: 35px; /* حجم أيقونة M */
-    height: 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    flex-shrink: 0; /* لمنع الانكماش */
-}
-
-.m-icon {
-    font-size: 20px;
-    color: #6a1b9a; /* لون M بنفس لون خلفية القسم */
-    font-weight: bold;
+/* تحسين العدادات */
+.timer-display {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
 }
 
 .timer-circle {
-    width: 60px; /* حجم أصغر للدوائر لتناسب التخطيط الأفقي */
-    height: 60px;
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
+    width: 80px;
+    height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px; /* حجم أصغر للوقت */
+    margin: 0 auto 10px;
+}
+
+.timer-value {
+    color: white;
     font-weight: bold;
-    color: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    margin-bottom: 5px; /* مسافة بين الدائرة والنص أسفلها */
+    font-size: 14px;
 }
 
-.minutes-circle {
-    background-color: #f7b731; /* لون أصفر/برتقالي للدقائق (أكثر وضوحاً من السابق) */
-}
-
-.hours-circle {
-    background-color: #3f51b5; /* لون أزرق للساعات (أكثر وضوحاً من السابق) */
-}
-
-.time-value {
-    font-size: 22px; /* تعديل حجم الخط ليكون داخل الدائرة */
-}
-
-.time-label {
-    font-size: 14px; /* حجم أصغر للنصوص "دقيقة" و "ساعة" */
-    color: white; /* لون أبيض للنص ليظهر على الخلفية البنفسجية */
-    font-weight: normal;
-}
-
-/* تنسيق أزرار الإجراءات */
-.device-actions {
-    display: flex;
-    flex-direction: column; /* الأزرار عموديا */
-    gap: 10px; /* مسافة بين الأزرار */
-    width: 100%; /* الأزرار تأخذ عرض البطاقة */
-}
-
-.device-actions button {
-    width: 100%; /* الأزرار تأخذ كامل العرض */
-    padding: 12px 15px; /* تباعد أكبر للأزرار */
-    border: none;
-    border-radius: 8px; /* حواف أكثر دائرية */
-    font-size: 16px; /* خط أكبر */
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease; /* إضافة transition للـ box-shadow */
-    font-weight: bold;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.device-actions button:hover {
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2); /* ظل أقوى عند التحويم على الأزرار */
-}
-
-.device-actions button:active {
-    transform: translateY(1px);
-}
-
-.btn-device-details {
-    background-color: #007bff; /* أزرق لزر بيانات الجهاز */
-    color: white;
-}
-
-.btn-device-details:hover {
-    background-color: #0056b3;
-}
-
-.btn-invoice-bofeih {
-    background-color: #6a1b9a; /* بنفسجي لزر الفاتورة والبوفيه */
-    color: white;
-}
-
-.btn-invoice-bofeih:hover {
-    background-color: #4a148c;
-}
-
-/* زر "ابدأ وقت" للأجهزة المتاحة */
-.btn-start-time {
-    background-color: #28a745; /* أخضر لزر ابدأ وقت */
-    color: white;
-}
-
-.btn-start-time:hover {
-    background-color: #218838;
-}
-
-/* تنسيقات قسم الفواتير */
-.invoices-section-content {
-    background-color: #f8f8f8;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-}
-
-.invoices-controls {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-bottom: 25px;
-}
-
-.invoices-controls .search-container,
-.invoices-controls .date-filter-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.invoices-controls input[type="text"],
-.invoices-controls input[type="date"] {
-    padding: 10px 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
-    color: #333;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.invoices-controls input[type="text"]:focus,
-.invoices-controls input[type="date"]:focus {
-    border-color: #6a1b9a;
-    box-shadow: 0 0 0 3px rgba(106, 27, 154, 0.2);
-    outline: none;
-}
-
-/* جدول الفواتير - تم استخدام نفس فئة main-details-table من money.css لضمان التناسق */
-/* إذا كان هناك تعارض، سنحتاج لإنشاء فئة جديدة لجدول الفواتير هنا */
-.invoices-table-container {
-    overflow-x: auto;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    padding: 0;
-}
-
-/* التنسيقات أدناه تم استخدامها بالفعل في money.css للكلاس .main-details-table */
-/* .main-details-table { ... } */
-/* .main-details-table thead th { ... } */
-/* .main-details-table tbody td { ... } */
-/* .main-details-table tbody tr:nth-child(even) { ... } */
-/* .main-details-table tbody tr:hover { ... } */
-/* .no-data-row { ... } */
-/* .no-data-cell { ... } */
-
-
-/* مودالات (النوافذ المنبثقة) - تنسيقات محسّنة */
-.modal {
-    display: none !important; /* ****** التعديل الأساسي هنا: إخفاء قوي ****** */
-    position: fixed; /* يبقى في مكانه حتى عند التمرير */
-    z-index: 1000; /* ليكون فوق كل المحتوى الآخر */
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); /* تظليل خلفية رمادي غامق وشفاف */
-    /* display: flex; سيتم إضافته بواسطة الجافاسكريبت فقط عند الحاجة */
-    justify-content: center; /* توسيط أفقي */
-    align-items: center; /* توسيط رأسي */
-    animation: fadeInModal 0.3s ease-out; /* تأثير ظهور المودال */
-}
-
-.modal.active {
-    display: flex !important; /* ****** التعديل هنا أيضاً: إظهار قوي ****** */
-}
-
-.modal-content {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4); /* ظل أقوى للمودال */
-    position: relative;
-    text-align: right;
-    animation: slideInFromTop 0.4s ease-out; /* تأثير انزلاق المودال */
-}
-
-.modal-content h3 {
+.timer-info {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 12px;
     text-align: center;
-    margin-bottom: 20px;
+}
+
+/* تحسين أزرار الإجراءات */
+.action-btn.warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.action-btn.warning:hover {
+    background-color: #e0a800 !important;
+}
+
+.action-btn.danger {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+.action-btn.danger:hover {
+    background-color: #c82333 !important;
+}
+
+/* تحسين البوفيه */
+.buffet-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr 300px;
+    gap: 20px;
+    padding: 20px;
+}
+
+.category-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.category-btn {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.category-btn.active,
+.category-btn:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+    transform: translateY(-2px);
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.product-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.product-icon {
+    font-size: 2rem;
+    color: #667eea;
+    margin-bottom: 10px;
+}
+
+.product-card h4 {
+    margin: 10px 0;
+    font-size: 14px;
     color: #333;
-    font-size: 24px; /* حجم خط أكبر للعناوين */
-    border-bottom: 2px solid #eee; /* خط فاصل أسفل العنوان */
+}
+
+.product-card .price {
+    color: #28a745;
+    font-weight: bold;
+    font-size: 16px;
+    margin: 5px 0;
+}
+
+.product-card .stock {
+    color: #6c757d;
+    font-size: 12px;
+    margin-bottom: 10px;
+}
+
+.add-to-order-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.add-to-order-btn:hover:not(:disabled) {
+    background: #218838;
+    transform: translateY(-1px);
+}
+
+.add-to-order-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+/* تحسين ملخص الطلبات */
+.order-summary {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    height: fit-content;
+}
+
+.order-summary h4 {
+    margin-bottom: 15px;
+    color: #333;
+    border-bottom: 2px solid #667eea;
     padding-bottom: 10px;
 }
 
-.modal .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 35px; /* حجم أكبر لزر الإغلاق */
-    color: #888;
-    cursor: pointer;
-    transition: color 0.2s ease, transform 0.2s ease;
+#buffetOrderList {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 15px 0;
+    max-height: 300px;
+    overflow-y: auto;
 }
 
-.modal .close-btn:hover {
-    color: #333;
-    transform: rotate(90deg); /* تدوير عند التحويم */
-}
-
-.modal .input-group {
-    margin-bottom: 20px; /* مسافة أكبر بين مجموعات الإدخال */
-}
-
-.modal .input-group label {
-    display: block;
-    margin-bottom: 8px; /* مسافة أكبر للعنوان */
-    color: #555;
-    font-weight: bold;
-    font-size: 16px;
-}
-
-.modal .input-group input[type="text"],
-.modal .input-group input[type="number"],
-.modal .input-group textarea,
-.modal .input-group select {
-    width: 100%;
-    padding: 12px; /* بادينج أكبر لحقول الإدخال */
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    font-size: 16px;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.08); /* ظل داخلي خفيف */
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.modal .input-group input:focus,
-.modal .input-group select:focus,
-.modal .input-group textarea:focus {
-    border-color: #6a1b9a; /* لون الحدود عند التركيز */
-    box-shadow: 0 0 0 3px rgba(106, 27, 154, 0.2); /* ظل التركيز */
-    outline: none;
-}
-
-.modal-buttons {
+.order-item {
     display: flex;
-    justify-content: flex-end;
-    gap: 15px; /* مسافة أكبر بين الأزرار */
-    margin-top: 30px;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed #dee2e6;
 }
 
-.modal-buttons .btn-exit,
-.modal-buttons .btn-save {
-    padding: 12px 25px; /* بادينج أكبر للأزرار */
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.item-name {
+    font-weight: 500;
+    color: #333;
+}
+
+.item-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.qty-btn {
+    background: #667eea;
+    color: white;
     border: none;
-    border-radius: 8px; /* حواف أكثر دائرية */
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
     cursor: pointer;
-    font-size: 17px; /* حجم خط أكبر */
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qty-btn:hover {
+    background: #5a67d8;
+}
+
+.quantity {
     font-weight: bold;
-    transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.2s ease;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    min-width: 20px;
+    text-align: center;
 }
 
-.modal-buttons .btn-exit {
-    background-color: #dc3545;
+.item-price {
+    color: #28a745;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.remove-btn {
+    background: #dc3545;
     color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 6px;
+    cursor: pointer;
+    font-size: 10px;
 }
 
-.modal-buttons .btn-exit:hover {
-    background-color: #c82333;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+.remove-btn:hover {
+    background: #c82333;
 }
 
-.modal-buttons .btn-save {
-    background-color: #28a745;
-    color: white;
+.summary-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    padding: 15px;
+    background: white;
+    border-radius: 8px;
+    border: 2px solid #28a745;
 }
 
-.modal-buttons .btn-save:hover {
-    background-color: #218838;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+.no-items {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 20px;
 }
 
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+.no-categories,
+.no-products {
+    text-align: center;
+    color: #6c757d;
+    padding: 20px;
+    font-style: italic;
 }
 
-@keyframes fadeInModal {
-    from { opacity: 0; }
-    to { opacity: 1; }
+/* تحسين معلومات الأسعار */
+.device-prices-info {
+    background: #e3f2fd;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
 }
 
-@keyframes slideInFromTop {
-    from { transform: translateY(-50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+.price-info {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
 }
 
-/* التنسيق المتجاوب لصفحة الأجهزة */
+.price-info span {
+    background: white;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-weight: 500;
+    color: #1976d2;
+    border: 1px solid #bbdefb;
+}
+
+/* تحسين تفاصيل الجهاز */
+.device-details {
+    padding: 20px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-item .label {
+    font-weight: 600;
+    color: #555;
+}
+
+.detail-item .value {
+    color: #333;
+    font-weight: 500;
+}
+
+.status-available {
+    color: #28a745 !important;
+    font-weight: bold;
+}
+
+.status-busy {
+    color: #dc3545 !important;
+    font-weight: bold;
+}
+
+.status-maintenance {
+    color: #ffc107 !important;
+    font-weight: bold;
+}
+
+/* تحسين النموذج */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.current-time-display {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    color: #495057;
+}
+
+/* تحسين الاستجابة */
 @media (max-width: 768px) {
-    .devices-top-controls {
+    .buffet-content {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .price-info {
         flex-direction: column;
-        align-items: center;
-        text-align: center;
+        gap: 10px;
     }
-    .add-device-btn {
-        width: 100%;
-        margin-top: 15px;
-    }
-    .devices-tab-controls { /* استخدام الكلاس الجديد هنا */
-        flex-direction: column; /* الأزرار عمودياً على الشاشات الصغيرة */
-        gap: 10px; /* مسافة بين الأزرار العمودية */
-        width: 100%; /* تأخذ عرض كامل على الشاشات الصغيرة */
-    }
-    .devices-tab-controls .devices-tab { /* استخدام الكلاس الجديد هنا */
-        width: 100%;
-        border-radius: 8px; /* حواف دائرية للأزرار العمودية */
-        border-bottom: none; /* إزالة الشريط السفلي هنا */
-    }
-    .devices-tab-controls .devices-tab.active { /* استخدام الكلاس الجديد هنا */
-        border-bottom: none; /* لا يوجد شريط سفلي */
-    }
-    .device-cards-container {
-        /* سيبقى flex-wrap يعمل على كسر الصفوف تلقائيًا */
-        justify-content: center; /* توسيط البطاقات عند كسر الصف */
-    }
-    .modal-content {
-        padding: 20px;
-    }
-    .invoices-controls {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .invoices-controls .search-container,
-    .invoices-controls .date-filter-container {
-        width: 100%;
-        justify-content: center; /* توسيط العناصر داخل الحاويات */
+    
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     }
 }
 
-
-
-.overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.4); /* تظليل ناعم */
-    z-index: 999;
+/* تحسين الحالة الفارغة */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #6c757d;
 }
 
-.overlay.active {
-    display: block;
+.loading-spinner i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    color: #667eea;
 }
 
-.sidebar {
-    position: fixed;
-    top: 0;
-    right: -250px;
-    width: 250px;
-    height: 100%;
-    background-color: #343A40; /* لون موحد أغمق للقائمة الجانبية */
-    color: white;
-    padding: 25px 20px; /* زيادة Padding */
-    transition: right 0.3s ease;
-    z-index: 1000;
-    box-shadow: -2px 0 10px rgba(0,0,0,0.1); /* ظل خفيف */
+.loading-spinner p {
+    font-size: 16px;
+    margin: 0;
 }
 
-.sidebar.active {
-    right: 0;
+.no-data {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #6c757d;
+    text-align: center;
 }
+
+.no-data i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.no-data h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+.no-data p {
+    font-size: 1rem;
+    margin: 0;
+}
+    document.getElementById('editCustomerForm')?.addEventListener('submit', e => { e.preventDefault(); updateCustomer(); });
+    
+    // البحث
+    document.getElementById('customerSearchInput')?.addEventListener('keyup', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            loadPageData(e.target.value);
+        }, 500);
+    });
+
+    // استخدام Event Delegation للأزرار الديناميكية
+    document.body.addEventListener('click', function(e) {
+        const button = e.target.closest('button');
+        if (!button) return;
+
+        if (button.classList.contains('close-btn') || button.classList.contains('btn-cancel')) {
+            button.closest('.modal')?.classList.remove('active');
+        }
+
+        const { action, id } = button.dataset;
+        if (!action || !id) return;
+        
+        const numericId = parseInt(id, 10);
+        if (action === 'edit') editCustomer(numericId);
+        if (action === 'delete') deleteCustomer(numericId);
+        if (action === 'view-details') viewCustomerDetails(numericId);
+    });
+}
+
+async function loadPageData(searchTerm = '') {
+    showNotification('جاري تحميل بيانات العملاء...', 'info');
+    try {
+        const url = searchTerm ? `customers?search=${searchTerm}` : 'customers';
+        const customers = await sendRequest(url, 'GET');
+        
+        renderCustomerTable(customers);
+        updateSummaryCards(customers);
+    } catch (error) {
+        showNotification('فشل تحميل البيانات', 'error');
+    }
+}
+
+function renderCustomerTable(customers) {
+    const tableBody = document.getElementById('customerTableBody');
+    if (!tableBody) return;
+    tableBody.innerHTML = '';
+    if (!customers || customers.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="7" class="no-data">لا يوجد عملاء مسجلين.</td></tr>`;
+        return;
+    }
+    customers.forEach(customer => {
+        const row = document.createElement('tr');
+        const balanceClass = parseFloat(customer.balance) > 0 ? 'text-danger' : 'text-success';
+        const lastTransaction = customer.last_transaction ? new Date(customer.last_transaction).toLocaleDateString('ar-EG') : 'لا يوجد';
+        
+        row.innerHTML = `
+            <td>${customer.customer_code}</td>
+            <td>${customer.name}</td>
+            <td>${customer.phone || '-'}</td>
+            <td class="${balanceClass}">${parseFloat(customer.balance).toFixed(2)} ج</td>
+            <td>${lastTransaction}</td>
+            <td><span class="status-badge ${customer.is_active ? 'available' : 'busy'}">${customer.is_active ? 'نشط' : 'غير نشط'}</span></td>
+            <td class="actions">
+                <button class="action-btn view" data-action="view-details" data-id="${customer.id}" title="تفاصيل"><i class="fas fa-info-circle"></i></button>
+                <button class="action-btn edit" data-action="edit" data-id="${customer.id}" title="تعديل"><i class="fas fa-edit"></i></button>
+                <button class="action-btn delete" data-action="delete" data-id="${customer.id}" title="حذف"><i class="fas fa-trash"></i></button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function updateSummaryCards(customers) {
+    const totalDue = customers.reduce((sum, cust) => sum + parseFloat(cust.balance), 0);
+    document.getElementById('totalDueAmount').textContent = totalDue.toFixed(2);
+    document.getElementById('totalCustomersCount').textContent = `${customers.length} عملاء`;
+}
+
+async function saveCustomer() {
+    const form = document.getElementById('addCustomerForm');
+    const data = {
+        name: form.customerName.value,
+        phone: form.customerPhone.value,
+        notes: form.customerNotes.value
+    };
+    await handleRequest(sendRequest('customers', 'POST', data), 'تمت إضافة العميل بنجاح', () => {
+        loadPageData();
+        closeModal('addCustomerModal');
+        form.reset();
+    });
+}
+
+async function editCustomer(id) {
+    try {
+        const customer = await sendRequest(`customers/${id}`, 'GET');
+        if (!customer) return;
+        
+        currentEditingId = id;
+        const form = document.getElementById('editCustomerForm');
+        form.editCustomerName.value = customer.name;
+        form.editCustomerPhone.value = customer.phone;
+        form.editCustomerNotes.value = customer.notes;
+        form.editCustomerIsActive.checked = customer.is_active;
+        openModal('editCustomerModal');
+    } catch (error) {
+        showNotification('فشل في جلب بيانات العميل', 'error');
+    }
+}
+
+async function updateCustomer() {
+    if (!currentEditingId) return;
+    const form = document.getElementById('editCustomerForm');
+    const data = {
+        name: form.editCustomerName.value,
+        phone: form.editCustomerPhone.value,
+        notes: form.editCustomerNotes.value,
+        is_active: form.editCustomerIsActive.checked
+    };
+    await handleRequest(sendRequest(`customers/${currentEditingId}`, 'PUT', data), 'تم تحديث البيانات بنجاح', () => {
+        loadPageData();
+        closeModal('editCustomerModal');
+    });
+}
+
+async function deleteCustomer(id) {
+    if (confirm('هل أنت متأكد من حذف هذا العميل؟')) {
+        await handleRequest(sendRequest(`customers/${id}`, 'DELETE'), 'تم حذف العميل بنجاح', loadPageData);
+    }
+}
+
+async function viewCustomerDetails(id) {
+    try {
+        const customer = await sendRequest(`customers/${id}`, 'GET');
+        if (!customer) return;
+        document.getElementById('detailCustomerCode').textContent = customer.customer_code;
+        document.getElementById('detailCustomerName').textContent = customer.name;
+        document.getElementById('detailCustomerPhone').textContent = customer.phone || '-';
+        document.getElementById('detailCustomerBalance').textContent = `${parseFloat(customer.balance).toFixed(2)} ج`;
+        document.getElementById('detailCustomerSince').textContent = new Date(customer.created_at).toLocaleDateString('ar-EG');
+        document.getElementById('detailLastTransaction').textContent = customer.last_transaction ? new Date(customer.last_transaction).toLocaleDateString('ar-EG') : 'لا يوجد';
+        document.getElementById('detailCustomerNotes').textContent = customer.notes || 'لا يوجد';
+        openModal('customerDetailsModal');
+    } catch (error) {
+        showNotification('فشل في عرض التفاصيل', 'error');
+    }
+}
+
+// --- دوال المساعدة ---
+function openModal(modalId) { document.getElementById(modalId)?.classList.add('active'); }
+function closeModal(modalId) { document.getElementById(modalId)?.classList.remove('active'); }
+async function sendRequest(endpoint, method, body = null) { try { const options = { method, headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, }; if (body) { options.body = JSON.stringify(body); } const response = await fetch(`${API_BASE_URL}/${endpoint}`, options); const data = await response.json(); if (!response.ok) { const errorMessages = Object.values(data.errors || {}).flat().join('\n'); throw new Error(errorMessages || data.message || 'حدث خطأ غير متوقع'); } return data; } catch (error) { console.error(`API Error:`, error); throw error; } }
+async function handleRequest(requestPromise, successMessage, callback) { try { await requestPromise; if (successMessage) showNotification(successMessage, 'success'); if (callback) await callback(); } catch (error) { showNotification(`فشل: ${error.message}`, 'error'); } }
+function showNotification(message, type = 'info') { const container = document.createElement('div'); container.className = `notification show ${type}`; const icons = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' }; container.innerHTML = `<i class="fas ${icons[type]}"></i><span style="margin-right: 10px;">${message}</span>`; document.body.appendChild(container); if (!document.getElementById('notification-styles')) { const style = document.createElement('style'); style.id = 'notification-styles'; style.textContent = `.notification { position: fixed; top: 20px; right: 20px; background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; z-index: 10000; transform: translateX(calc(100% + 20px)); transition: transform 0.5s ease-in-out; } .notification.show { transform: translateX(0); } .notification.success { border-left: 5px solid #28a745; } .notification.error { border-left: 5px solid #dc3545; } .notification.info { border-left: 5px solid #17a2b8; }`; document.head.appendChild(style); } setTimeout(() => { container.classList.remove('show'); setTimeout(() => container.remove(), 500); }, 4000); }

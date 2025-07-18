@@ -226,6 +226,9 @@
                 <span class="close-btn">&times;</span>
             </div>
             <form id="startSessionForm">
+                <div id="deviceTypePrices" class="device-prices-info">
+                    <!-- سيتم ملؤها بواسطة JavaScript -->
+                </div>
                 <div class="form-group">
                     <label>اختر نوع اللعب</label>
                     <div class="radio-group">
@@ -293,23 +296,5 @@
 
     <script src="../js/main.js"></script>
     <script src="../js/devices.js"></script>
-    
-    <script>
-        // دالة البحث في الأجهزة
-        function filterDevices(searchTerm) {
-            const cards = document.querySelectorAll('.device-card');
-            cards.forEach(card => {
-                const deviceName = card.querySelector('.device-info h3').textContent.toLowerCase();
-                const deviceType = card.querySelector('.device-info .device-id').textContent.toLowerCase();
-                
-                if (deviceName.includes(searchTerm.toLowerCase()) || 
-                    deviceType.includes(searchTerm.toLowerCase())) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-        }
-    </script>
 </body>
 </html>

@@ -1,5 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 بدء تحميل صفحة المخزون والأسعار...');
+    // التأكد من بناء القائمة الجانبية أولاً
+    if (typeof buildSidebar === 'function') {
+        buildSidebar();
+    }
     setupEventListeners();
     loadInitialData();
 });

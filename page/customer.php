@@ -41,9 +41,9 @@
         <div class="table-container">
             <div class="table-header">
                 <h3>قائمة العملاء</h3>
-                <div class="search-bar">
-                    <input type="text" id="customerSearchInput" placeholder="ابحث بكود العميل أو اسمه...">
+                <div class="search-box">
                     <i class="fas fa-search"></i>
+                    <input type="text" id="customerSearchInput" placeholder="ابحث بكود العميل أو اسمه...">
                 </div>
             </div>
             <table class="data-table">

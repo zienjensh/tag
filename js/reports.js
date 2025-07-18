@@ -24,6 +24,10 @@ const sampleData = {
 
 // تهيئة الصفحة عند التحميل
 document.addEventListener('DOMContentLoaded', function() {
+    // التأكد من بناء القائمة الجانبية أولاً
+    if (typeof buildSidebar === 'function') {
+        buildSidebar();
+    }
     initializeReportsPage();
     setupEventListeners();
     setDefaultDates();
