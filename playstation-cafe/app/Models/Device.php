@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 class Device extends Model
 {
     use HasFactory;
+    
     protected $fillable = ['name', 'device_type_id', 'status'];
 
     public function deviceType()
@@ -16,5 +17,10 @@ class Device extends Model
     public function activeSession()
     {
         return $this->hasOne(Session::class)->where('status', 'active');
+    }
+
+    public function sessions()
+    {
+        return $this->hasMany(Session::class);
     }
 }

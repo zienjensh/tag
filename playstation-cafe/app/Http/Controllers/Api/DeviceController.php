@@ -52,7 +52,7 @@ class DeviceController extends Controller
             return response()->json([
                 'devices' => $devices,
                 'deviceTypes' => DeviceType::all(),
-                'categories' => Category::with('products')->get(),
+                'categories' => Category::all(),
                 'products' => Product::with('category')->get(),
                 'shift' => $activeShift,
                 'stats' => [
@@ -143,6 +143,12 @@ class DeviceController extends Controller
                 
                 foreach($validated['items'] as $item) {
                     $product = Product::find($item['product_id']);
+                    
+                    // التحقق من توفر المخزون
+                    if ($product->stock_quantity < $item['quantity']) {
+                        throw new \Exception("المنتج {$product->name} غير متوفر بالكمية المطلوبة");
+                    }
+                    
                     $totalPrice = $product->customer_price * $item['quantity'];
                     
                     // إضافة المنتج للجلسة
@@ -246,5 +252,30 @@ class DeviceController extends Controller
     public function show(Device $device)
     {
         return response()->json($device->load(['deviceType', 'activeSession.products']));
+    }
+
+    /**
+     * تحديث وقت الجلسة يدوياً
+     */
+    public function updateSessionTime(Request $request, Session $session)
+    {
+        $validated = $request->validate([
+            'hours' => 'required|integer|min:0',
+            'minutes' => 'required|integer|min:0|max:59'
+        ]);
+
+        try {
+            $totalMinutes = ($validated['hours'] * 60) + $validated['minutes'];
+            $newStartTime = Carbon::now()->subMinutes($totalMinutes);
+            
+            $session->update(['start_time' => $newStartTime]);
+            
+            return response()->json([
+                'message' => 'تم تحديث الوقت بنجاح',
+                'session' => $session->fresh()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'فشل في تحديث الوقت: ' . $e->getMessage()], 500);
+        }
     }
 }
