@@ -1,0 +1,915 @@
+/* inventory.css - تصميم مطابق تماماً لصفحة الأجهزة */
+
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: #F8F9FA;
+    direction: rtl;
+    color: #343A40;
+    margin: 0;
+    padding: 0;
+}
+
+/* === نسخ مطابق من devices.css === */
+
+/* تنسيق شريط التحكم العلوي */
+.devices-top-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f0f0f0;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.devices-top-controls .page-title {
+    font-size: 24px;
+    color: #333;
+    margin: 0;
+}
+
+.add-device-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease;
+}
+
+.add-device-btn:hover {
+    background-color: #218838;
+}
+
+/* تنسيق قسم التبويبات - مطابق للأجهزة */
+.devices-tab-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    background-color: #E9ECEF;
+    border-radius: 10px;
+    padding: 5px;
+}
+
+.devices-tab-controls .devices-tab {
+    flex: 1;
+    padding: 15px 0;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-bottom: 3px solid transparent;
+    background-color: transparent;
+    color: #555;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+    border-radius: 0;
+}
+
+.devices-tab-controls .devices-tab.active {
+    color: #ffffff;
+    background-color: #6a1b9a;
+    border-color: #6a1b9a;
+    box-shadow: 0 4px 10px rgba(106, 27, 154, 0.3);
+    border-radius: 15px;
+}
+
+.devices-tab-controls .devices-tab:hover {
+    color: #6a1b9a;
+    background-color: #f3e5f5;
+}
+
+/* تخطيط أقسام المخزون - مطابق للأجهزة */
+.devices-sections-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* تنسيق أقسام المخزون - مطابق للأجهزة */
+.devices-section {
+    background-color: #f8f8f8;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-header h3 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    margin: 0;
+}
+
+.section-count {
+    background-color: #6a1b9a;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    padding: 10px 0;
+    margin-bottom: 20px;
+    color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    width: calc(100% - 40px);
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 800px;
+}
+
+.unavailable-title {
+    background-color: #e74c3c;
+}
+
+.available-title {
+    background-color: #28a745;
+}
+
+/* حاوية بطاقات المخزون - إصلاح التخطيط الأفقي */
+.device-cards-container,
+.devices-grid {
+    display: flex !important; /* إجبار العرض الأفقي */
+    flex-wrap: wrap !important; /* السماح بالانتقال لصف جديد */
+    gap: 20px !important; /* المسافة بين البطاقات */
+    justify-content: flex-start !important; /* البدء من اليسار */
+    align-items: flex-start !important; /* المحاذاة للأعلى */
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* === تنسيق بطاقة المنتج - نسخة مطابقة 100% من الأجهزة === */
+.device-card {
+    background-color: #fff !important;
+    border-radius: 15px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    padding: 20px !important;
+    text-align: center !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: transform 0.2s ease-in-out !important;
+    border: 1px solid #eee !important;
+    width: 250px !important; /* عرض ثابت */
+    min-width: 250px !important; /* حد أدنى للعرض */
+    max-width: 250px !important; /* حد أقصى للعرض */
+    flex-shrink: 0 !important; /* منع الانكماش */
+    flex-grow: 0 !important; /* منع النمو */
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    animation: fadeIn 0.5s ease-out !important;
+    margin: 0 !important; /* إزالة أي هوامش */
+}
+
+.device-card:hover {
+    transform: translateY(-5px) scale(1.02) !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25) !important;
+}
+
+/* ID المنتج - مطابق للأجهزة */
+.device-id-container {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    display: flex;
+    align-items: baseline;
+    color: #4CAF50;
+    font-size: 14px;
+    font-weight: bold;
+    gap: 3px;
+}
+
+.device-id-label {
+    color: #666;
+    font-size: 13px;
+    font-weight: normal;
+}
+
+.device-id {
+    font-size: 18px;
+    color: #4CAF50;
+}
+
+/* شارات الحالة - مطابق للأجهزة */
+.device-status-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.device-status-badge.available {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.device-status-badge.busy {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+/* زر الحذف - مطابق للأجهزة */
+.device-delete-btn {
+    position: absolute;
+    top: 50px;
+    right: 15px;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    transition: background-color 0.2s ease;
+}
+
+.device-delete-btn:hover {
+    background-color: #c82333;
+}
+
+/* رأس البطاقة - مطابق للأجهزة */
+.device-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.device-icon {
+    font-size: 48px;
+    color: #6a1b9a;
+    margin-bottom: 10px;
+}
+
+.device-info {
+    text-align: center;
+    width: 100%;
+}
+
+.device-info h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.device-info .device-id {
+    font-size: 14px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.device-logo {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    margin-bottom: 5px;
+}
+
+.device-type {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* تنسيقات خاصة بالمنتجات */
+.device-specs {
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.spec-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px dashed #eee;
+}
+
+.spec-item:last-child {
+    border-bottom: none;
+}
+
+.spec-label {
+    font-weight: bold;
+    color: #666;
+    font-size: 14px;
+}
+
+.spec-value {
+    color: #333;
+    font-size: 14px;
+}
+
+/* تنسيق أزرار الإجراءات - إصلاح عرض النص */
+.device-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+    margin-top: auto !important; /* دفع الأزرار للأسفل */
+}
+
+.device-actions button {
+    width: 100% !important;
+    padding: 12px 15px !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-size: 14px !important; /* تصغير حجم الخط قليلاً */
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease !important;
+    font-weight: bold !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1) !important;
+    white-space: nowrap !important; /* منع كسر النص */
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.device-actions button:hover {
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2) !important;
+}
+
+.device-actions button:active {
+    transform: translateY(1px) !important;
+}
+
+.device-actions button i {
+    font-size: 14px !important;
+    flex-shrink: 0 !important; /* منع انكماش الأيقونة */
+}
+
+.device-actions button span {
+    font-size: 14px !important;
+    font-weight: bold !important;
+    color: inherit !important;
+    display: inline !important;
+    white-space: nowrap !important;
+}
+
+/* ألوان الأزرار */
+.btn-device-details,
+.action-btn.secondary {
+    background-color: #007bff !important;
+    color: white !important;
+}
+
+.btn-device-details:hover,
+.action-btn.secondary:hover {
+    background-color: #0056b3 !important;
+}
+
+.btn-invoice-bofeih,
+.action-btn.primary {
+    background-color: #6a1b9a !important;
+    color: white !important;
+}
+
+.btn-invoice-bofeih:hover,
+.action-btn.primary:hover {
+    background-color: #4a148c !important;
+}
+
+.btn-start-time {
+    background-color: #28a745 !important;
+    color: white !important;
+}
+
+.btn-start-time:hover {
+    background-color: #218838 !important;
+}
+
+/* === نسخ تنسيقات المودالات من الأجهزة === */
+.modal {
+    display: none !important;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    justify-content: center;
+    align-items: center;
+    animation: fadeInModal 0.3s ease-out;
+}
+
+.modal.active {
+    display: flex !important;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+    position: relative;
+    text-align: right;
+    animation: slideInFromTop 0.4s ease-out;
+}
+
+.modal-content h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 24px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+}
+
+.modal .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 35px;
+    color: #888;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.modal .close-btn:hover {
+    color: #333;
+    transform: rotate(90deg);
+}
+
+.modal .input-group,
+.modal .form-group {
+    margin-bottom: 20px;
+}
+
+.modal .input-group label,
+.modal .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #555;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.modal .input-group input[type="text"],
+.modal .input-group input[type="number"],
+.modal .input-group textarea,
+.modal .input-group select,
+.modal .form-group input[type="text"],
+.modal .form-group input[type="number"],
+.modal .form-group textarea,
+.modal .form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.modal .input-group input:focus,
+.modal .input-group select:focus,
+.modal .input-group textarea:focus,
+.modal .form-group input:focus,
+.modal .form-group select:focus,
+.modal .form-group textarea:focus {
+    border-color: #6a1b9a;
+    box-shadow: 0 0 0 3px rgba(106, 27, 154, 0.2);
+    outline: none;
+}
+
+.modal-buttons,
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.modal-buttons .btn-exit,
+.modal-buttons .btn-save,
+.modal-buttons .btn-cancel,
+.modal-footer .btn-exit,
+.modal-footer .btn-save,
+.modal-footer .btn-cancel {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 17px;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+.modal-buttons .btn-exit,
+.modal-buttons .btn-cancel,
+.modal-footer .btn-exit,
+.modal-footer .btn-cancel {
+    background-color: #dc3545;
+    color: white;
+}
+
+.modal-buttons .btn-exit:hover,
+.modal-buttons .btn-cancel:hover,
+.modal-footer .btn-exit:hover,
+.modal-footer .btn-cancel:hover {
+    background-color: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.modal-buttons .btn-save,
+.modal-footer .btn-save {
+    background-color: #28a745;
+    color: white;
+}
+
+.modal-buttons .btn-save:hover,
+.modal-footer .btn-save:hover {
+    background-color: #218838;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* تنسيق الـ checkbox المحسن */
+.checkbox-label {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    cursor: pointer !important;
+    font-weight: 500 !important;
+    margin-bottom: 0 !important;
+    padding: 12px !important;
+    border-radius: 8px !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.checkbox-label:hover {
+    background-color: rgba(106, 27, 154, 0.05) !important;
+}
+
+.checkbox-label input[type="checkbox"] {
+    display: none !important;
+}
+
+.checkmark {
+    width: 22px !important;
+    height: 22px !important;
+    border: 2px solid #ddd !important;
+    border-radius: 6px !important;
+    position: relative !important;
+    transition: all 0.3s ease !important;
+    background: white !important;
+    flex-shrink: 0 !important;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark {
+    background: #6a1b9a !important;
+    border-color: #6a1b9a !important;
+    transform: scale(1.1) !important;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+    content: '✓' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    color: white !important;
+    font-size: 0.9rem !important;
+    font-weight: bold !important;
+}
+
+/* تنسيق الصفوف في النماذج */
+.form-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
+    margin-bottom: 24px !important;
+}
+
+/* === نسخ الأنيميشن من الأجهزة === */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInFromTop {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* === إخفاء/إظهار الأقسام === */
+.devices-section.hidden {
+    display: none !important;
+}
+
+.devices-section.visible {
+    display: block !important;
+}
+
+/* === نسخ التنسيق المتجاوب من الأجهزة === */
+@media (max-width: 768px) {
+    .devices-top-controls {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .add-device-btn {
+        width: 100%;
+        margin-top: 15px;
+    }
+    .devices-tab-controls {
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+    }
+    .devices-tab-controls .devices-tab {
+        width: 100%;
+        border-radius: 8px;
+        border-bottom: none;
+    }
+    .devices-tab-controls .devices-tab.active {
+        border-bottom: none;
+    }
+    .device-cards-container,
+    .devices-grid {
+        justify-content: center !important;
+    }
+    .modal-content {
+        padding: 20px;
+        width: 95%;
+    }
+    .form-row {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+}
+
+/* === نسخ تنسيقات الـ Sidebar من الأجهزة === */
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 999;
+}
+
+.overlay.active {
+    display: block;
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: -250px;
+    width: 250px;
+    height: 100%;
+    background-color: #343A40;
+    color: white;
+    padding: 25px 20px;
+    transition: right 0.3s ease;
+    z-index: 1000;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+}
+
+.sidebar.active {
+    right: 0;
+}
+
+/* تحسينات إضافية للمخزون */
+.section-separator {
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #6a1b9a 50%, transparent 100%);
+    margin: 30px 0;
+    border-radius: 1px;
+}
+
+/* تنسيقات خاصة للمنتجات قليلة المخزون */
+.device-card.low-stock {
+    border-left: 5px solid #ffc107 !important;
+    background: linear-gradient(135deg, #fff 0%, #fff9e6 100%) !important;
+}
+
+.device-card.low-stock .device-status-badge {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+/* تنسيقات خاصة للمنتجات منتهية الصلاحية */
+.device-card.expired {
+    border-left: 5px solid #dc3545 !important;
+    background: linear-gradient(135deg, #fff 0%, #fff5f5 100%) !important;
+    opacity: 0.8;
+}
+
+.device-card.expired .device-status-badge {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+/* تحسين مظهر الأزرار في الجداول */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.edit-btn,
+.delete-btn {
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.edit-btn {
+    background: linear-gradient(135deg, #ffc107 0%, #ffb74d 100%);
+    color: white;
+}
+
+.edit-btn:hover {
+    background: linear-gradient(135deg, #f57c00 0%, #ffc107 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+}
+
+.delete-btn {
+    background: linear-gradient(135deg, #dc3545 0%, #ef5350 100%);
+    color: white;
+}
+
+.delete-btn:hover {
+    background: linear-gradient(135deg, #d32f2f 0%, #dc3545 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+}
+
+/* تحسين شريط التمرير */
+.devices-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.devices-grid::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.devices-grid::-webkit-scrollbar-thumb {
+    background: #6a1b9a;
+    border-radius: 4px;
+}
+
+.devices-grid::-webkit-scrollbar-thumb:hover {
+    background: #8e24aa;
+}
+
+/* تأثير التحميل للأزرار */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.btn-loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    margin: auto;
+    border: 2px solid transparent;
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* تحسينات إضافية للطباعة */
+@media print {
+    .devices-top-controls,
+    .devices-tab-controls,
+    .section-header,
+    .device-actions,
+    .add-device-btn {
+        display: none !important;
+    }
+    
+    .tab-content {
+        display: block !important;
+        box-shadow: none;
+        padding: 0;
+    }
+    
+    .device-card {
+        break-inside: avoid;
+        margin-bottom: 20px;
+    }
+}
+
+/* رسائل التنبيه والنجاح */
+.alert {
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+}
+
+.alert-success {
+    background: rgba(76, 175, 80, 0.1);
+    color: #4caf50;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.alert-warning {
+    background: rgba(255, 152, 0, 0.1);
+    color: #ff9800;
+    border: 1px solid rgba(255, 152, 0, 0.3);
+}
+
+.alert-error {
+    background: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+    border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+/* حالة عدم وجود بيانات */
+.no-data {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.no-data i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.no-data h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #343a40;
+}
+
+.no-data p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+}

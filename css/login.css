@@ -1,0 +1,195 @@
+/* أسلوب عام */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Tajawal', sans-serif;  /* استخدام خط Tajawal */
+    background-image: url('https://www.chromethemer.com/download/hd-wallpapers/night-7680x4320.jpg');
+    background-size: cover;  /* جعل الصورة تغطي كامل الخلفية */
+    background-position: center;
+    background-attachment: fixed;  /* جعل الخلفية ثابتة */
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* تصميم صندوق تسجيل الدخول مع تأثير زجاجي */
+.login-container {
+    background-color: rgba(255, 255, 255, 0.2); /* شفافية للصندوق */
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 350px;
+    text-align: center;
+    backdrop-filter: blur(10px); /* تأثير الضبابية على الخلفية */
+    border: 1px solid rgba(255, 255, 255, 0.1); /* إضافة الحدود */
+    animation: fadeIn 1s ease-in-out;
+}
+
+/* تأثير الانميشن لصندوق تسجيل الدخول */
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+/* تنسيق الحقول */
+label {
+    font-size: 14px;
+    color: #fff;
+    text-align: right;
+    display: block;
+    margin: 10px 0 5px;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: rgba(255, 255, 255, 0.5); /* شفافية لحقول الإدخال */
+    color: #333;
+}
+
+/* زر الدخول */
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* مربع منبثق مع تظليل الخلفية */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeInModal 0.5s ease-in-out;
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 15% auto;
+    padding: 30px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+/* تأثير الانميشن لظهور المربع المنبثق */
+@keyframes fadeInModal {
+    0% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.close-btn {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+/* تنسيق أيقونة التحذير داخل المربع المنبثق */
+.warning-icon {
+    margin-top: 20px;
+}
+
+.warning-icon span {
+    font-size: 40px;
+    color: #FF0000;
+}
+
+/* زر "تواصل معنا" */
+.contact-btn {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.contact-btn:hover {
+    background-color: #45a049;
+}
+
+/* المربع المنبثق "Loading..." داخل الصفحة */
+.loading-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    text-align: center;
+    color: white;
+    padding-top: 20%;
+}
+
+.loading-content {
+    font-size: 20px;
+}
+
+/* أنميشن تحميل */
+.loader {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

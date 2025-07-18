@@ -1,0 +1,453 @@
+/* ملف: css/modal.css */
+
+/* تنسيقات المودال الأساسية */
+.modal {
+    display: none; /* مخفي افتراضياً */
+    position: fixed; /* يبقى ثابتاً بالنسبة لنافذة العرض */
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* تظليل خلفية رمادي غامق وشفاف */
+    animation: fadeInModal 0.3s ease-out; /* تأثير ظهور المودال */
+    box-sizing: border-box;
+    /* التوصيط سيكون في modal-content */
+}
+
+.modal.active {
+    display: block; /* يظهر كـ block للسماح بتوسيط المحتوى */
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 25px; /* تباعد داخلي مناسب */
+    border-radius: 15px; /* حواف دائرية أكثر */
+    width: 90%;
+    max-width: 650px; /* أقصى عرض للمودال ليظهر بشكل جيد على الشاشات الكبيرة */
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3); /* ظل أقوى وأكثر انتشاراً */
+    position: absolute; /* موضع مطلق داخل الـ modal (الذي هو fixed) */
+    top: 50%; /* 50% من الأعلى */
+    left: 50%; /* 50% من اليسار */
+    transform: translate(-50%, -50%); /* توسيط دقيق */
+    text-align: right;
+    animation: slideInFromTop 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* انزلاق مع دالة توقيت سلسة */
+    overflow-y: auto; /* التمرير يكون على المحتوى إذا زاد */
+    max-height: 90vh; /* أقصى ارتفاع للمودال */
+    box-sizing: border-box; /* لضمان أن البادينج لا يضيف للعرض الإجمالي */
+}
+
+/* عنوان المودال و زر الإغلاق */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eee; /* خط فاصل خفيف */
+    position: relative; /* لتحديد موقع الجهاز ID */
+}
+
+.modal-header h3 {
+    font-size: 26px; /* حجم خط كبير للعنوان */
+    color: #333;
+    margin: 0 auto; /* توسيط العنوان */
+    font-weight: bold;
+    flex-grow: 1; /* للسماح للعنوان بأخذ المساحة المتاحة وتوسيط نفسه */
+    text-align: center; /* توسيط النص */
+}
+
+.modal .close-btn {
+    position: absolute; /* تحديد الموضع المطلق بالنسبة للـ modal-header */
+    top: 15px; /* مسافة من الأعلى */
+    left: 15px; /* أصبح في أقصى اليسار */
+    font-size: 38px; /* حجم كبير لزر الإغلاق */
+    color: #888;
+    cursor: pointer;
+    transition: color 0.2s ease, transform 0.2s ease;
+    background: none;
+    border: none;
+    padding: 0;
+    line-height: 1; /* لضمان أن حجم الخط هو الحجم الفعلي للزر */
+}
+
+.modal .close-btn:hover {
+    color: #333;
+    transform: rotate(90deg); /* تدوير عند التحويم */
+}
+
+.device-id-in-modal {
+    background-color: #6a1b9a; /* لون أرجواني للخلفية */
+    color: white;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    position: absolute;
+    top: 15px; /* مسافة من الأعلى ليتوافق مع زر الإغلاق */
+    right: 15px; /* مسافة من اليمين (ظل كما هو، يمكنك تعديله إذا كنت ترغب بتحريكه أيضاً) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px; /* لضمان حجم ثابت تقريباً */
+    box-shadow: 0 2px 8px rgba(106, 27, 154, 0.4);
+}
+
+/* الأقسام الرئيسية داخل المودال */
+.modal-section {
+    margin-bottom: 30px; /* مسافة بين الأقسام الرئيسية */
+}
+
+.modal-section-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px dashed #ddd; /* خط فاصل منقط */
+    padding-bottom: 10px;
+}
+
+/* قسم رسالة الفاتورة */
+.invoice-message-section {
+    background-color: #fffde7; /* خلفية صفراء فاتحة جداً */
+    border: 1px solid #ffecb3; /* حدود صفراء خفيفة */
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    box-shadow: inset 0 1px 5px rgba(0,0,0,0.05); /* ظل داخلي خفيف */
+    margin-bottom: 30px; /* مسافة جيدة تحت هذا القسم */
+}
+
+.invoice-message-section .edit-button-wrapper {
+    flex-shrink: 0; /* لمنع الزر من الانكماش */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px; /* مسافة بين الزر والنص */
+}
+
+.invoice-message-section textarea {
+    flex-grow: 1; /* لتأخذ باقي المساحة */
+    width: 100%; /* يجب أن تأخذ المساحة المتبقية من الأب الفليكس */
+    min-height: 80px; /* ارتفاع افتراضي */
+    border: 1px solid #ffd54f; /* حدود صفراء أغمق */
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 16px;
+    background-color: #fff;
+    resize: vertical; /* السماح بتغيير الحجم عموديا فقط */
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.invoice-message-section textarea:focus {
+    border-color: #6a1b9a; /* لون أرجواني عند التركيز */
+    box-shadow: 0 0 0 3px rgba(106, 27, 154, 0.2), inset 0 1px 3px rgba(0,0,0,0.1);
+    outline: none;
+}
+
+/* زر التعديل */
+.edit-btn {
+    background-color: #ffc107; /* لون أصفر */
+    color: #333;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 25px; /* حواف دائرية جداً */
+    cursor: pointer;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.edit-btn:hover {
+    background-color: #e0a800;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.edit-btn .material-icons {
+    font-size: 20px;
+}
+
+/* قسم الأوقات - هنا التعديل ليكونوا جنب بعض بمسافات جيدة */
+.times-section {
+    display: flex;
+    justify-content: space-between; /* توزيع العناصر بشكل متساوٍ ومتباعد */
+    align-items: flex-start; /* محاذاة للأعلى لضمان التناسق إذا اختلفت الارتفاعات */
+    flex-wrap: wrap; /* للسماح بالالتفاف على الشاشات الصغيرة */
+    gap: 20px; /* مسافة بين العناصر */
+    background-color: #e8eaf6; /* خلفية زرقاء فاتحة جداً */
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: inset 0 1px 5px rgba(0,0,0,0.05);
+}
+
+.time-start-display,
+.timer-display,
+.time-type-options {
+    flex-grow: 1; /* للسماح لكل مربع بأن ينمو ويأخذ مساحة */
+    flex-basis: calc(33.33% - 20px); /* تقريباً ثلث العرض ناقص المسافة (gap) */
+    max-width: calc(33.33% - 14px); /* لضمان ألا يتجاوزوا ثلث العرض لكل منهم، مع تعديل بسيط للـ gap */
+    box-sizing: border-box; /* لضمان أن البادينج لا يضيف للعرض الإجمالي */
+}
+
+/* تعديلات محددة للمربعات للحفاظ على التباعد */
+.time-start-display {
+    background-color: #fff;
+    border: 1px solid #c5cae9;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.time-start-display p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+.time-start-display .time-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #3f51b5; /* لون أزرق */
+}
+
+.timer-display {
+    display: flex;
+    flex-direction: column; /* لتجميع الساعات والدقائق عمودياً */
+    align-items: center;
+    background-color: #6a1b9a; /* لون أرجواني */
+    border-radius: 15px;
+    padding: 15px 10px; /* تباعد داخلي مناسب */
+    gap: 15px; /* مسافة بين العناصر الداخلية */
+    box-shadow: 0 4px 15px rgba(106, 27, 154, 0.4);
+}
+
+.timer-display .m-icon-wrapper {
+    background-color: white;
+    border-radius: 50%;
+    width: 45px; /* حجم أكبر قليلاً للأيقونة */
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.timer-display .m-icon {
+    font-size: 28px; /* حجم أكبر لأيقونة M */
+    color: #6a1b9a;
+    font-weight: bold;
+}
+
+.timer-display .timer-items-row { /* حاوية جديدة للدوائر لتبقيهم بجانب بعض */
+    display: flex;
+    gap: 10px; /* مسافة بين دوائر الدقائق والساعات */
+    justify-content: center;
+    width: 100%;
+}
+
+.timer-display .timer-item-small {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.timer-display .time-circle-small {
+    width: 60px; /* حجم أكبر للدوائر */
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px; /* حجم أكبر للوقت */
+    font-weight: bold;
+    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.timer-display .minutes-circle-small {
+    background-color: #f7b731; /* لون أصفر/برتقالي */
+}
+
+.timer-display .hours-circle-small {
+    background-color: #3f51b5; /* لون أزرق */
+}
+
+.timer-display .time-label-small {
+    font-size: 14px; /* حجم خط أكبر قليلاً */
+    color: white;
+}
+
+.time-type-options {
+    background-color: #fff;
+    border: 1px solid #c5cae9;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* محاذاة لليمين للنصوص */
+}
+
+.time-type-options p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.time-type-options .radio-group {
+    display: flex;
+    flex-direction: column; /* جعل خيارات الراديو عمودية للحفاظ على المساحة */
+    gap: 15px; /* مسافة بين خيارات الراديو */
+    align-items: flex-end; /* محاذاة لليمين */
+    width: 100%; /* لتأخذ كل المساحة المتاحة وتسهيل المحاذاة */
+}
+
+.time-type-options .radio-group label {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    color: #333;
+    cursor: pointer;
+    width: fit-content; /* لتحديد عرض الـ label بحجم المحتوى */
+}
+
+.time-type-options .radio-group input[type="radio"] {
+    margin-left: 8px; /* مسافة بين الزر والنص */
+    width: 20px; /* حجم أكبر لزر الراديو */
+    height: 20px;
+    accent-color: #6a1b9a; /* لون الأرجواني لزر الراديو عند التحديد */
+}
+
+/* قسم البوفيه */
+.bofeih-section {
+    display: flex;
+    align-items: center; /* محاذاة رأسية */
+    justify-content: flex-end; /* محاذاة لليمين */
+    gap: 15px;
+    background-color: #e0f2f7; /* خلفية زرقاء سماوي فاتحة */
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: inset 0 1px 5px rgba(0,0,0,0.05);
+    margin-bottom: 30px; /* مسافة جيدة تحت هذا القسم */
+}
+
+.bofeih-section .edit-btn {
+    background-color: #ffc107; /* نفس زر التعديل */
+    color: #333;
+    padding: 10px 18px;
+    font-size: 15px;
+}
+
+/* أزرار الإجراءات السفلية للمودال */
+.modal-footer-buttons {
+    display: flex;
+    justify-content: space-between; /* توزيع الأزرار على الطرفين */
+    padding-top: 20px;
+    border-top: 1px solid #eee; /* خط فاصل خفيف */
+    margin-top: 20px;
+}
+
+.modal-footer-buttons button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 17px;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-footer-buttons button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.25);
+}
+
+.modal-footer-buttons .btn-cancel-bottom {
+    background-color: #dc3545; /* لون أحمر للإلغاء */
+    color: white;
+}
+
+.modal-footer-buttons .btn-cancel-bottom:hover {
+    background-color: #c82333;
+}
+
+.modal-footer-buttons .btn-view-invoice {
+    background-color: #007bff; /* لون أزرق لعرض الفاتورة */
+    color: white;
+}
+
+.modal-footer-buttons .btn-view-invoice:hover {
+    background-color: #0056b3;
+}
+
+/* Animations */
+@keyframes fadeInModal {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInFromTop {
+    from { transform: translate(-50%, -60px); opacity: 0; } /* تأثير انزلاق من الأعلى */
+    to { transform: translate(-50%, -50%); opacity: 1; }
+}
+
+/* التنسيق المتجاوب */
+@media (max-width: 900px) { /* تعديل نقطة التوقف لجعل المربعات الثلاثة تلتف أبكر */
+    .times-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .time-start-display,
+    .timer-display,
+    .time-type-options {
+        max-width: 100%; /* تأخذ عرض كامل */
+    }
+}
+
+@media (max-width: 600px) {
+    .modal-content {
+        padding: 15px;
+        border-radius: 10px;
+    }
+    .modal-header h3 {
+        font-size: 22px;
+    }
+    .device-id-in-modal {
+        font-size: 16px;
+        padding: 4px 10px;
+    }
+    .invoice-message-section,
+    .bofeih-section {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+    .invoice-message-section textarea {
+        min-height: 60px;
+    }
+    .modal-footer-buttons {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .modal-footer-buttons button {
+        width: 100%;
+    }
+}

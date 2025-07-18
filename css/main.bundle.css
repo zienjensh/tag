@@ -1,0 +1,187 @@
+/* ملف CSS موحد لجميع الأنماط الخاصة بالتربيزات والمودالات */
+/* ... سيتم هنا دمج جميع أكواد css ذات الصلة ... */
+/* يمكنك نقل محتوى tables.css, tables-extra.css, modal.css, money.css وأي ملفات أخرى هنا */
+
+/* --- tables.css --- */
+/* devices.css - النسخة النهائية مع !important لتصحيح ظهور المودالات */
+body {
+    font-family: 'Tajawal', sans-serif;
+    background-color: #F8F9FA;
+    direction: rtl;
+    color: #343A40;
+}
+.content {
+    padding-top: 70px;
+    padding-bottom: 20px;
+    padding-right: 20px;
+    padding-left: 20px;
+}
+.devices-top-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f0f0f0;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.devices-top-controls .page-title {
+    font-size: 24px;
+    color: #333;
+    margin: 0;
+}
+.add-device-btn {
+    background-color: #28a745;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.3s ease;
+}
+.add-device-btn:hover {
+    background-color: #218838;
+}
+.devices-tab-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    background-color: #E9ECEF;
+    border-radius: 10px;
+    padding: 5px;
+}
+.devices-tab-controls .devices-tab {
+    flex: 1;
+    padding: 15px 0;
+    font-size: 18px;
+    font-weight: bold;
+    border: none;
+    border-bottom: 3px solid transparent;
+    background-color: transparent;
+    color: #555;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+    border-radius: 0;
+}
+.devices-tab-controls .devices-tab.active {
+    color: #ffffff;
+    background-color: #6a1b9a;
+    border-color: #6a1b9a;
+    box-shadow: 0 4px 10px rgba(106, 27, 154, 0.3);
+    border-radius: 15px;
+}
+.devices-tab-controls .devices-tab:hover {
+    color: #6a1b9a;
+    background-color: #f3e5f5;
+}
+.devices-sections-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+/* ... باقي كود tables.css ... */
+
+/* --- tables-extra.css --- */
+.hidden-section {
+    display: none !important;
+}
+.hidden-section-time-edit,
+.hidden-section-bofeih-edit-old {
+    display: none !important;
+}
+/* ... باقي كود tables-extra.css ... */
+
+/* --- modal.css --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    animation: fadeInModal 0.3s ease-out;
+    box-sizing: border-box;
+}
+.modal.active {
+    display: block;
+}
+.modal-content {
+    background-color: #fff;
+    padding: 25px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 650px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: right;
+    animation: slideInFromTop 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    overflow-y: auto;
+    max-height: 90vh;
+    box-sizing: border-box;
+}
+/* ... باقي كود modal.css ... */
+
+/* --- money.css --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: 'Tajawal', sans-serif;
+    background-color: #F8F9FA;
+    direction: rtl;
+    color: #343A40;
+}
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 999;
+}
+.overlay.active {
+    display: block;
+}
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: -250px;
+    width: 250px;
+    height: 100%;
+    background-color: #343A40;
+    color: white;
+    padding: 25px 20px;
+    transition: right 0.3s ease;
+    z-index: 1000;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+}
+.sidebar.active {
+    right: 0;
+}
+.content {
+    padding-top: 100px;
+    padding-bottom: 30px;
+    padding-left: 30px;
+    padding-right: 120px;
+    width: 100%;
+    transition: margin-right 0.3s ease;
+}
+.sidebar.active + .content {
+    margin-right: 250px;
+}
+/* ... باقي كود money.css ... */

@@ -1,0 +1,1092 @@
+/* CSS إضافي قد تحتاج إليه لبعض التعديلات الدقيقة */
+        .hidden-section {
+            display: none !important; /* استخدام !important لضمان الإخفاء التام وتجاوز أي قواعد أخرى */
+        }
+        /* لإخفاء قسم تعديل الوقت في البداية */
+        .hidden-section-time-edit,
+        .hidden-section-bofeih-edit-old {
+            display: none !important;
+        }
+        /* إخفاء جميع أقسام وتنسيقات الوقت في المودال */
+        .hidden-section-time-edit,
+        .modal-section.times-section,
+        .time-edit-details,
+        .time-type-options-edit {
+            display: none !important;
+        }
+        /* تنسيقات إضافية لزر التعديل في الأوقات */
+        .modal-section.times-section .edit-button-invoice {
+            text-align: center;
+            margin-top: 15px;
+        }
+        .modal-section.times-section .edit-button-invoice .edit-btn {
+            background-color: #ffc107;
+            color: #333;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .modal-section.times-section .edit-button-invoice .edit-btn:hover {
+            background-color: #e0a800;
+        }
+
+        /* تنسيقات قسم تعديل الوقت الجديد */
+        .time-edit-details {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .time-edit-details .device-info-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            color: #555;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .time-edit-details .device-info-header img {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+        .time-edit-details .prices-row {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.0em;
+        }
+        .time-edit-details .prices-row span {
+            font-weight: bold;
+        }
+        .time-edit-details .time-inputs-row {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: #6a0dad;
+            color: white;
+            padding: 15px 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .time-edit-details .time-input-group {
+            text-align: center;
+        }
+        .time-edit-details .time-input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        .time-edit-details .time-input-group input {
+            width: 80px;
+            padding: 5px;
+            border: none;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+        }
+        .time-edit-details .time-type-options-edit {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .time-edit-details .time-type-options-edit label {
+            cursor: pointer;
+        }
+        .time-edit-details .time-type-options-edit input[type="radio"] {
+            margin-left: 5px;
+        }
+        .time-edit-details .total-sum {
+            background-color: #6a0dad;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .time-edit-details .add-new-time-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+        .time-edit-details .add-new-time-btn:hover {
+            background-color: #218838;
+        }
+        .time-edit-details .bottom-cancel-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        .time-edit-details .bottom-cancel-btn:hover {
+            background-color: #c82333;
+        }
+        .invoice-message-section, .bofeih-section, .modal-footer-buttons {
+            transition: opacity 0.3s ease-in-out, max-height 0.3s ease-in-out;
+            overflow: hidden;
+        }
+        .times-section {
+             background-color: #6a0dad;
+             color: white;
+             padding: 15px;
+             border-radius: 8px;
+             margin-bottom: 20px;
+             text-align: center;
+        }
+        .times-section p {
+            margin-bottom: 5px;
+        }
+        .times-section .time-start-display,
+        .times-section .timer-display {
+            display: inline-block;
+            vertical-align: middle;
+            margin: 0 10px;
+        }
+        .times-section .time-start-display .time-value {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .times-section .timer-display .m-icon-wrapper {
+            display: inline-block;
+            margin-left: 5px;
+        }
+        .times-section .timer-display .timer-items-row {
+            display: inline-flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .times-section .timer-item-small .time-circle-small {
+            background-color: white;
+            color: #6a0dad;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1em;
+        }
+        .times-section .time-type-options {
+            margin-top: 15px;
+        }
+        .times-section .time-type-options .radio-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .times-section .time-type-options label {
+            font-size: 0.9em;
+        }
+        .times-section .edit-button-invoice {
+            margin-top: 15px;
+        }
+        .modal-section.bofeih-section,
+        .modal-footer-buttons {
+            padding: 15px;
+        }
+
+        /* ***** تنسيقات القسم القديم لتعديل البوفيه (bofeih-edit-details-old) ***** */
+        .bofeih-edit-details-old {
+            background-color: #e0f7fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .bofeih-edit-details-old h4 {
+            color: #00796b;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        .bofeih-edit-details-old .bofeih-item-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+        .bofeih-edit-details-old .bofeih-item-input input[type="text"],
+        .bofeih-edit-details-old .bofeih-item-input input[type="number"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+            width: 150px;
+        }
+        .bofeih-edit-details-old .bofeih-item-input input[type="number"] {
+            width: 80px;
+        }
+        .bofeih-edit-details-old .add-bofeih-item-btn {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 15px;
+            margin-bottom: 20px;
+        }
+        .bofeih-edit-details-old .add-bofeih-item-btn:hover {
+            background-color: #43a047;
+        }
+        .bofeih-edit-details-old .current-bofeih-items {
+            margin-top: 20px;
+            border-top: 1px solid #ddd;
+            padding-top: 15px;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .bofeih-edit-details-old .current-bofeih-items ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .bofeih-edit-details-old .current-bofeih-items li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        .bofeih-edit-details-old .current-bofeih-items li:last-child {
+            border-bottom: none;
+        }
+        .bofeih-edit-details-old .current-bofeih-items li .item-name {
+            font-weight: bold;
+            color: #333;
+        }
+        .bofeih-edit-details-old .current-bofeih-items li .item-price {
+            color: #666;
+        }
+        .bofeih-edit-details-old .bofeih-total-cost {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #e65100;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #ffccbc;
+        }
+        .bofeih-edit-details-old .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        .bofeih-edit-details-old .action-buttons .btn-cancel,
+        .bofeih-edit-details-old .action-buttons .btn-save {
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            border: none;
+        }
+        .bofeih-edit-details-old .action-buttons .btn-cancel {
+            background-color: #f44336;
+            color: white;
+        }
+        .bofeih-edit-details-old .action-buttons .btn-cancel:hover {
+            background-color: #d32f2f;
+        }
+        .bofeih-edit-details-old .action-buttons .btn-save {
+            background-color: #1976d2;
+            color: white;
+        }
+        .bofeih-edit-details-old .action-buttons .btn-save:hover {
+            background-color: #1565c0;
+        }
+
+
+        /* ***** تنسيقات المودال الجديد للبوفيه (bofeihDetailsModal) - هذا هو المودال المطلوب في الصورة ***** */
+        #bofeihDetailsModal .modal-content {
+            width: 400px; /* حجم مناسب للمودال */
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        #bofeihDetailsModal .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        #bofeihDetailsModal .modal-header h3 {
+            color: #6a0dad; /* لون أرجواني */
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #bofeihDetailsModal .modal-header .device-id-circle {
+            background-color: #6a0dad; /* لون أرجواني */
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        #bofeihDetailsModal .close-btn {
+            font-size: 1.8em;
+            color: #aaa;
+            cursor: pointer;
+        }
+        #bofeihDetailsModal .close-btn:hover {
+            color: #777;
+        }
+
+        /* تنسيق جدول المنتجات */
+        .bofeih-products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: #ffe0e0; /* أحمر فاتح جداً */
+            border-radius: 8px;
+            overflow: hidden; /* للحفاظ على حدود مستديرة */
+            border: 1px solid #ffcccc;
+        }
+        .bofeih-products-table th,
+        .bofeih-products-table td {
+            padding: 10px 8px;
+            text-align: center;
+            border-bottom: 1px solid #ffcccc;
+        }
+        .bofeih-products-table th {
+            background-color: #ffcccc; /* أحمر فاتح */
+            color: #333;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+        .bofeih-products-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .bofeih-products-table .item-name {
+            text-align: right; /* اسم المنتج لليمين */
+            font-weight: 500;
+        }
+        .bofeih-products-table .item-price,
+        .bofeih-products-table .item-qty,
+        .bofeih-products-table .item-total {
+            font-size: 0.9em;
+        }
+        .bofeih-products-table .item-total {
+            font-weight: bold;
+            color: #e65100; /* برتقالي */
+        }
+
+        /* إجمالي البوفيه */
+        .total-bofeih-display {
+            background-color: #1a1a1a; /* أسود */
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 1.5em;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .total-bofeih-display .value {
+            color: #fdd835; /* أصفر */
+        }
+
+        /* أزرار الإجراءات */
+        .bofeih-action-buttons {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .bofeih-action-buttons .action-btn {
+            flex-grow: 1;
+            padding: 12px 0;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.2s ease;
+        }
+        .bofeih-action-buttons .add-products-btn {
+            background-color: #28a745; /* أخضر */
+            color: white;
+        }
+        .bofeih-action-buttons .add-products-btn:hover {
+            background-color: #218838;
+        }
+        .bofeih-action-buttons .add-return-btn {
+            background-color: #dc3545; /* أحمر */
+            color: white;
+        }
+        .bofeih-action-buttons .add-return-btn:hover {
+            background-color: #c82333;
+        }
+
+        /* زر الإلغاء السفلي */
+        .bofeih-modal-footer .cancel-btn-bottom {
+            background-color: #e0e0e0;
+            color: #333;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px; /* انحناء أكثر */
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+        .bofeih-modal-footer .cancel-btn-bottom:hover {
+            background-color: #d0d0d0;
+        }
+
+        /* New Modal for Adding Products */
+        #addProductToBofeihModal .modal-content {
+            width: 700px; /* Adjust width as needed */
+            max-width: 90%;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        #addProductToBofeihModal .modal-header h3 {
+            color: #6a0dad;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        #addProductToBofeihModal .modal-header .device-id-circle {
+            background-color: #6a0dad;
+            color: white;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1em;
+            font-weight: bold;
+        }
+        #addProductToBofeihModal .product-selection-area {
+            flex: 1;
+            padding-right: 20px;
+            border-right: 1px solid #eee;
+        }
+        #addProductToBofeihModal .selected-products-summary {
+            width: 300px; /* Fixed width for summary */
+            padding-left: 20px;
+        }
+
+        #addProductToBofeihModal .modal-content {
+            display: flex; /* Use flexbox for layout */
+            flex-direction: row; /* Arrange children in a row */
+            justify-content: space-between;
+            align-items: flex-start; /* Align items to the start of the cross axis */
+            width: 800px; /* Adjusted width for two-column layout */
+        }
+        #addProductToBofeihModal .product-selection-area {
+            flex: 1; /* Takes remaining space */
+            padding-right: 20px;
+            border-right: 1px solid #eee;
+        }
+        #addProductToBofeihModal .selected-products-summary {
+            width: 300px; /* Fixed width for the summary part */
+            padding-left: 20px;
+        }
+        #addProductToBofeihModal .search-product-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        #addProductToBofeihModal .categories {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+        #addProductToBofeihModal .category-btn {
+            background-color: #e0e0e0;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+        #addProductToBofeihModal .category-btn.active,
+        #addProductToBofeihModal .category-btn:hover {
+            background-color: #6a0dad;
+            color: white;
+        }
+        #addProductToBofeihModal .product-display-options {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+        }
+        #addProductToBofeihModal .product-display-options button {
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        #addProductToBofeihModal .product-display-options button.active {
+            background-color: #6a0dad;
+            color: white;
+        }
+
+        /* Styles for product list in addProductToBofeihModal */
+        #addProductToBofeihModal .product-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Responsive grid */
+            gap: 10px;
+            max-height: 300px; /* Limit height for scroll */
+            overflow-y: auto;
+            border: 1px solid #eee;
+            background-color: white;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        #addProductToBofeihModal .product-card {
+            background-color: #f0f8ff; /* Light blue background */
+            border: 1px solid #cceeff;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #addProductToBofeihModal .product-card .product-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+        #addProductToBofeihModal .product-card .product-price {
+            color: #6a0dad; /* Purple */
+            font-size: 0.85em;
+            margin-bottom: 10px;
+        }
+        #addProductToBofeihModal .product-card .add-product-to-selection-btn {
+            background-color: #28a745; /* Green */
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            justify-content: center;
+            width: 90%;
+            transition: background-color 0.2s ease;
+        }
+        #addProductToBofeihModal .product-card .add-product-to-selection-btn:hover {
+            background-color: #218838;
+        }
+
+        #addProductToBofeihModal .selected-products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        #addProductToBofeihModal .selected-products-table th,
+        #addProductToBofeihModal .selected-products-table td {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+        #addProductToBofeihModal .selected-products-table th {
+            background-color: #f0f0f0;
+        }
+        #addProductToBofeihModal .selected-products-table .item-qty input {
+            width: 50px;
+            padding: 3px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        #addProductToBofeihModal .delete-selected-product-btn {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 1.1em;
+        }
+        /* Adjust the total-selected-products styling to be more prominent */
+        #addProductToBofeihModal .total-selected-products {
+            font-size: 1.4em;
+            font-weight: bold;
+            text-align: right;
+            margin-top: 20px;
+            color: #333;
+            background-color: #ffe0e0;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        #addProductToBofeihModal .total-selected-products #totalSelectedProductsAmount {
+            color: #e65100; /* Orange */
+        }
+        #addProductToBofeihModal .save-selected-products-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 20px;
+            width: 100%;
+        }
+        #addProductToBofeihModal .cancel-btn-bottom {
+            background-color: #e0e0e0;
+            color: #333;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        /* New Invoice View/Print Modal */
+        #invoiceViewModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        #invoiceViewModal.active {
+            display: flex;
+        }
+        #invoiceViewModal .modal-content {
+            background-color: white;
+            width: 400px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        #invoiceViewModal .modal-header {
+            background-color: #6a0dad;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #invoiceViewModal .modal-header .device-id-circle {
+            background-color: white;
+            color: #6a0dad;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+        }
+        #invoiceViewModal .close-btn {
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+        #invoiceViewModal .modal-body {
+            padding: 20px;
+        }
+        #invoiceViewModal .invoice-summary {
+            margin-bottom: 20px;
+        }
+        #invoiceViewModal .invoice-summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        #invoiceViewModal .invoice-summary-item.total {
+            font-weight: bold;
+            font-size: 1.3em;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        #invoiceViewModal .invoice-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 25px;
+        }
+        #invoiceViewModal .invoice-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #invoiceViewModal .pay-invoice-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        #invoiceViewModal .pay-invoice-btn:hover {
+            background-color: #218838;
+        }
+        #invoiceViewModal .close-invoice-btn {
+            background-color: #e0e0e0;
+            color: #333;
+        }
+        #invoiceViewModal .close-invoice-btn:hover {
+            background-color: #d0d0d0;
+        }
+
+        /* New Payment Modal */
+        #paymentModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        #paymentModal.active {
+            display: flex;
+        }
+        #paymentModal .modal-content {
+            background-color: white;
+            width: 450px; /* Increased width for better layout */
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        #paymentModal .modal-header {
+            background-color: #6a0dad;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #paymentModal .modal-header .device-id-circle {
+            background-color: white;
+            color: #6a0dad;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+        }
+        #paymentModal .close-btn {
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+        #paymentModal .modal-body {
+            padding: 20px;
+        }
+        #paymentModal .payment-method-section {
+            margin-bottom: 20px;
+        }
+        #paymentModal .payment-method-section h4 {
+            margin-bottom: 15px;
+            color: #555;
+            text-align: center;
+        }
+        #paymentModal .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        #paymentModal .payment-option {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #paymentModal .payment-option:hover {
+            background-color: #e9e9e9;
+        }
+        #paymentModal .payment-option input[type="radio"] {
+            margin-left: 10px;
+        }
+        
+        /* Customer search section */
+        #paymentModal .customer-search-section {
+            display: none;
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border-radius: 8px;
+        }
+        #paymentModal .customer-search-section.active {
+            display: block;
+        }
+        #paymentModal .customer-search-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        #paymentModal .customer-info-display {
+            background-color: #e6f7ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: none;
+        }
+        #paymentModal .customer-info-display.active {
+            display: block;
+        }
+        #paymentModal .customer-balance {
+            font-weight: bold;
+            color: #6a0dad;
+        }
+        
+        /* Split payments section */
+        #paymentModal .split-payments-section {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #fff8e1;
+            border-radius: 8px;
+        }
+        #paymentModal .split-payments-section.active {
+            display: block;
+        }
+        #paymentModal .split-payments-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        #paymentModal .split-payments-table th,
+        #paymentModal .split-payments-table td {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+        #paymentModal .split-payments-table th {
+            background-color: #f5f5f5;
+        }
+        #paymentModal .add-split-payment-btn {
+            background-color: #6a0dad;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        /* Cash section */
+        #paymentModal .cash-section {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            display: none;
+        }
+        #paymentModal .cash-section.active {
+            display: block;
+        }
+        #paymentModal .cash-input-group {
+            margin-bottom: 15px;
+        }
+        #paymentModal .cash-input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        #paymentModal .cash-input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        
+        /* Discount section */
+        #paymentModal .discount-section {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+        #paymentModal .discount-type-options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        #paymentModal .discount-input-group {
+            margin-bottom: 15px;
+        }
+        #paymentModal .discount-input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        #paymentModal .discount-input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        
+        /* Total section */
+        #paymentModal .total-section {
+            background-color: #6a0dad;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        #paymentModal .remaining-section {
+            background-color: #28a745;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+        #paymentModal .remaining-section.active {
+            display: block;
+        }
+        #paymentModal .remaining-section.negative {
+            background-color: #dc3545;
+        }
+        
+        /* Payment actions */
+        #paymentModal .payment-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        #paymentModal .payment-actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+        }
+        #paymentModal .save-payment-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        #paymentModal .save-payment-btn:hover {
+            background-color: #218838;
+        }
+        #paymentModal .save-payment-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #paymentModal .cancel-payment-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+        #paymentModal .cancel-payment-btn:hover {
+            background-color: #c82333;
+        }
+        
+        /* Print receipt section */
+        #paymentModal .print-receipt-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            display: none;
+        }
+        #paymentModal .print-receipt-section.active {
+            display: block;
+        }
+        #paymentModal .print-receipt-options {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        #paymentModal .print-receipt-btn {
+            background-color: #6a0dad;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
