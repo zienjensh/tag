@@ -1,7 +1,7 @@
-// js/main.js - النسخة الكاملة والمُصححة مع نظام المصادقة
+// js/main.js - النسخة المُصححة مع نظام المصادقة المحسن
 
-const API_BASE_URL = 'http://127.0.0.1:8000'; // بدون /api
-const PROJECT_ROOT = '/tag'; // تأكد من أن هذا هو اسم مجلد مشروعك
+const API_BASE_URL = 'http://127.0.0.1:8000';
+const PROJECT_ROOT = '/tag';
 
 document.addEventListener('DOMContentLoaded', () => {
     const sidebarToggle = document.getElementById('sidebarToggle');
@@ -62,22 +62,31 @@ async function buildSidebar() {
         <div class="sidebar-footer"><div class="user-profile"><div class="user-avatar"><img src="../uploads/employee.jpg" alt="Employee"><div class="status-dot"></div></div><div class="user-info"><span class="user-name">${userData.name}</span><span class="user-role">${userData.role === 'admin' ? 'مدير النظام' : 'موظف'}</span></div></div><button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>تسجيل الخروج</span></button></div>
     `;
 
-    document.getElementById('logoutBtn')?.addEventListener('click', () => {
-        sessionStorage.clear();
-        window.location.href = `${PROJECT_ROOT}/index.php`;
+    document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+        try {
+            await sendRequest('/api/logout', 'POST');
+        } catch (e) {
+            console.log('Logout error:', e);
+        } finally {
+            sessionStorage.clear();
+            window.location.href = `${PROJECT_ROOT}/index.php`;
+        }
     });
 }
 
 /**
- * [الإصلاح الجذري] - دالة إرسال الطلبات الآن تطلب كوكيز المصادقة أولاً
+ * دالة إرسال الطلبات المحسنة مع معالجة أفضل للأخطاء
  */
 async function sendRequest(endpoint, method, body = null, isFormData = false) {
     try {
-        // [الإصلاح] التأكد من وجود كوكيز المصادقة قبل إرسال الطلب
-        await fetch(`${API_BASE_URL}/sanctum/csrf-cookie`, { credentials: 'include' });
-        
         const headers = { 'Accept': 'application/json' };
         const options = { method, headers, credentials: 'include' };
+
+        // إضافة التوكن إذا كان متوفراً
+        const token = sessionStorage.getItem('authToken');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
 
         if (body) {
             if (isFormData) {
@@ -93,12 +102,15 @@ async function sendRequest(endpoint, method, body = null, isFormData = false) {
         if (response.status === 401 || response.status === 419) {
             sessionStorage.clear();
             window.location.href = `${PROJECT_ROOT}/index.php`;
-            return Promise.reject(new Error("Session expired."));
+            return Promise.reject(new Error("انتهت صلاحية الجلسة"));
         }
+
         if (!response.ok) {
             const errorData = await response.json();
-            const errorMessages = errorData.errors ? Object.values(errorData.errors).flat().join('\n') : errorData.message;
-            throw new Error(errorMessages || 'فشل في الطلب');
+            const errorMessages = errorData.errors ? 
+                Object.values(errorData.errors).flat().join('\n') : 
+                errorData.message || 'حدث خطأ غير متوقع';
+            throw new Error(errorMessages);
         }
         
         return response.status !== 204 ? response.json() : null;

@@ -11,13 +11,20 @@ use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\PermissionController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\DeviceController;
-
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\DeviceTypeController;
+use App\Http\Controllers\Api\CouponController;
 
 // رابط تسجيل الدخول (لا يحتاج لمصادقة)
 Route::post('/login', [AuthController::class, 'login']);
 
-// [الإصلاح الجذري] كل الروابط التالية الآن محمية وتتطلب توكن
+// الروابط المحمية بالمصادقة
 Route::middleware('auth:sanctum')->group(function () {
+    
+    // Authentication routes
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', [AuthController::class, 'user']);
     
     // Shifts Routes
     Route::get('/shifts/active', [ShiftController::class, 'getActiveShift']);
@@ -39,8 +46,17 @@ Route::middleware('auth:sanctum')->group(function () {
     // Resourceful Routes (CRUD)
     Route::apiResource('users', UserController::class);
     Route::apiResource('customers', CustomerController::class);
+    Route::apiResource('categories', CategoryController::class);
+    Route::apiResource('products', ProductController::class);
+    Route::apiResource('device-types', DeviceTypeController::class);
+    Route::apiResource('coupons', CouponController::class);
+    
+    // Product restock
+    Route::post('/products/{product}/restock', [ProductController::class, 'restock']);
+    
+    // Device management
+    Route::get('/devices-page-data', [DeviceController::class, 'getPageData']);
+    Route::post('/devices/{device}/start-session', [DeviceController::class, 'startSession']);
+    Route::post('/sessions/{session}/add-order', [DeviceController::class, 'addBuffetOrder']);
+    Route::post('/sessions/{session}/end', [DeviceController::class, 'endSession']);
 });
-Route::get('/devices-page-data', [DeviceController::class, 'getPageData']);
-Route::post('/devices/{device}/start-session', [DeviceController::class, 'startSession']);
-Route::post('/sessions/{session}/add-order', [DeviceController::class, 'addBuffetOrder']);
-Route::post('/sessions/{session}/end', [DeviceController::class, 'endSession']);
