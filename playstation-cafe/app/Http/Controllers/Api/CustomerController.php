@@ -13,17 +13,21 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Customer::query();
+        try {
+            $query = Customer::query();
 
-        // البحث باستخدام اسم العميل أو الكود
-        if ($request->has('search')) {
-            $searchTerm = $request->input('search');
-            $query->where('name', 'like', "%{$searchTerm}%")
-                  ->orWhere('customer_code', 'like', "%{$searchTerm}%");
+            // البحث باستخدام اسم العميل أو الكود
+            if ($request->has('search')) {
+                $searchTerm = $request->input('search');
+                $query->where('name', 'like', "%{$searchTerm}%")
+                      ->orWhere('customer_code', 'like', "%{$searchTerm}%");
+            }
+
+            $customers = $query->latest()->get(); // 'latest()' لعرض أحدث العملاء أولاً
+            return response()->json($customers);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'فشل في تحميل العملاء: ' . $e->getMessage()], 500);
         }
-
-        $customers = $query->latest()->get(); // 'latest()' لعرض أحدث العملاء أولاً
-        return response()->json($customers);
     }
 
     /**
