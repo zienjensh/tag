@@ -1,4 +1,4 @@
-// js/setting.js - النسخة المحسنة والكاملة
+// js/setting.js - النسخة المحسنة والكاملة مع إصلاح جميع المشاكل
 
 document.addEventListener('DOMContentLoaded', () => {
     // main.js يهتم بالقائمة الجانبية، هنا نهتم فقط ببيانات الصفحة
@@ -37,16 +37,28 @@ function playNotificationSound(type = 'notification') {
 
 function setupSettingsEventListeners() {
     // مراقبة أي تغيير في النموذج لتفعيل زر الحفظ
-    document.getElementById('settingsForm')?.addEventListener('change', () => markAsChanged(true));
+    const settingsForm = document.getElementById('settingsForm');
+    if (settingsForm) {
+        settingsForm.addEventListener('change', () => markAsChanged(true));
+    }
     
     // زر الحفظ الرئيسي
-    document.getElementById('saveAllSettingsBtn')?.addEventListener('click', saveAllSettings);
+    const saveBtn = document.getElementById('saveAllSettingsBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', saveAllSettings);
+    }
     
     // رفع اللوجو
-    document.getElementById('logoUpload')?.addEventListener('change', previewLogo);
+    const logoUpload = document.getElementById('logoUpload');
+    if (logoUpload) {
+        logoUpload.addEventListener('change', previewLogo);
+    }
     
     // تغيير الموظف لعرض صلاحياته
-    document.getElementById('employeeSelect')?.addEventListener('change', (e) => loadUserPermissions(e.target.value));
+    const employeeSelect = document.getElementById('employeeSelect');
+    if (employeeSelect) {
+        employeeSelect.addEventListener('change', (e) => loadUserPermissions(e.target.value));
+    }
 
     // أزرار التنقل بين التبويبات
     document.querySelectorAll('.tab-btn').forEach(tab => {

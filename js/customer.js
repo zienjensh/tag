@@ -1,4 +1,4 @@
-// js/customer.js - النسخة المحسنة والكاملة
+// js/customer.js - النسخة المحسنة والكاملة مع إصلاح جميع المشاكل
 
 document.addEventListener('DOMContentLoaded', () => {
     // التأكد من بناء القائمة الجانبية أولاً
@@ -37,29 +37,41 @@ function playNotificationSound(type = 'notification') {
 
 function setupEventListeners() {
     // الأزرار الثابتة
-    document.getElementById('addCustomerModalBtn')?.addEventListener('click', () => {
-        console.log('Add customer button clicked');
-        openModal('addCustomerModal');
-    });
+    const addCustomerBtn = document.getElementById('addCustomerModalBtn');
+    if (addCustomerBtn) {
+        addCustomerBtn.addEventListener('click', () => {
+            console.log('Add customer button clicked');
+            openModal('addCustomerModal');
+        });
+    }
     
     // نماذج الإضافة والتعديل
-    document.getElementById('addCustomerForm')?.addEventListener('submit', e => { 
-        e.preventDefault(); 
-        saveCustomer(); 
-    });
+    const addForm = document.getElementById('addCustomerForm');
+    if (addForm) {
+        addForm.addEventListener('submit', e => { 
+            e.preventDefault(); 
+            saveCustomer(); 
+        });
+    }
     
-    document.getElementById('editCustomerForm')?.addEventListener('submit', e => { 
-        e.preventDefault(); 
-        updateCustomer(); 
-    });
+    const editForm = document.getElementById('editCustomerForm');
+    if (editForm) {
+        editForm.addEventListener('submit', e => { 
+            e.preventDefault(); 
+            updateCustomer(); 
+        });
+    }
     
     // البحث
-    document.getElementById('customerSearchInput')?.addEventListener('keyup', (e) => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            loadPageData(e.target.value);
-        }, 500);
-    });
+    const searchInput = document.getElementById('customerSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                loadPageData(e.target.value);
+            }, 500);
+        });
+    }
 
     // استخدام Event Delegation للأزرار الديناميكية
     document.body.addEventListener('click', function(e) {

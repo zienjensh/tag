@@ -1,4 +1,4 @@
-// js/employees.js - النسخة المحسنة والكاملة
+// js/employees.js - النسخة المحسنة والكاملة مع إصلاح جميع المشاكل
 
 document.addEventListener('DOMContentLoaded', () => {
     // استدعاء الملف العام أولاً (للتأكد من بناء القائمة الجانبية)
@@ -39,20 +39,29 @@ function playNotificationSound(type = 'notification') {
 
 // --- إعداد الواجهة والوظائف الأساسية ---
 function setupEventListeners() {
-    document.getElementById('addEmployeeModalBtn')?.addEventListener('click', () => {
-        console.log('Add employee button clicked');
-        openAddEmployeeModal();
-    });
+    const addEmployeeBtn = document.getElementById('addEmployeeModalBtn');
+    if (addEmployeeBtn) {
+        addEmployeeBtn.addEventListener('click', () => {
+            console.log('Add employee button clicked');
+            openAddEmployeeModal();
+        });
+    }
     
-    document.getElementById('addEmployeeForm')?.addEventListener('submit', e => { 
-        e.preventDefault(); 
-        saveEmployee(); 
-    });
+    const addForm = document.getElementById('addEmployeeForm');
+    if (addForm) {
+        addForm.addEventListener('submit', e => { 
+            e.preventDefault(); 
+            saveEmployee(); 
+        });
+    }
     
-    document.getElementById('editEmployeeForm')?.addEventListener('submit', e => { 
-        e.preventDefault(); 
-        updateEmployee(); 
-    });
+    const editForm = document.getElementById('editEmployeeForm');
+    if (editForm) {
+        editForm.addEventListener('submit', e => { 
+            e.preventDefault(); 
+            updateEmployee(); 
+        });
+    }
     
     document.body.addEventListener('click', function(e) {
         const button = e.target.closest('button');

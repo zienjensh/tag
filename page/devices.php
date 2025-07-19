@@ -256,7 +256,7 @@
     <div id="buffetModal" class="modal">
         <div class="modal-content wide">
             <div class="modal-header">
-                <h3><i class="fas fa-concierge-bell"></i> إضافة طلبات بوفيه</h3>
+                <h3><i class="fas fa-concierge-bell"></i> إضافة طلبات بوفيه - جهاز <span id="buffetTableId"></span></h3>
                 <span class="close-btn">&times;</span>
             </div>
             <div class="buffet-content">

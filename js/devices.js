@@ -1,4 +1,4 @@
-// devices.js - النسخة المحسنة والكاملة مع ربط قواعد البيانات
+// devices.js - النسخة المحسنة والكاملة مع إصلاح جميع المشاكل
 
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof buildSidebar === 'function') buildSidebar();
@@ -223,13 +223,6 @@ function createDeviceCard(device) {
                 <span>الفاتورة والبوفيه</span>
             </button>
             
-            ${device.status === 'busy' ? `
-                <button class="action-btn warning" data-action="edit-time" data-id="${device.id}">
-                    <i class="fas fa-clock"></i>
-                    <span>تعديل الوقت</span>
-                </button>
-            ` : ''}
-            
             <button class="action-btn info btn-device-details" data-action="details" data-id="${device.id}">
                 <i class="fas fa-info-circle"></i>
                 <span>التفاصيل</span>
@@ -388,21 +381,15 @@ function handleDeviceAction(action, id) {
             currentSessionId = device.active_session?.id;
             openInvoiceBofeihModal(device.id);
             break;
-
-        case 'edit-time':
-            if (device.active_session) {
-                openEditTimeModal(device.active_session);
-            }
+            
+        case 'details':
+            showDeviceDetails(device);
             break;
             
         case 'delete':
             if (confirm('هل أنت متأكد من حذف هذا الجهاز؟')) {
                 deleteDevice(id);
             }
-            break;
-            
-        case 'details':
-            showDeviceDetails(device);
             break;
     }
 }
@@ -517,220 +504,6 @@ function openInvoiceBofeihModal(deviceId) {
     }
 }
 
-// مودال البوفيه المنفصل
-function openBofeihModal(deviceId) {
-    let modal = document.getElementById('bofeihDetailsModal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'bofeihDetailsModal';
-        modal.className = 'modal';
-        document.body.appendChild(modal);
-    }
-    
-    modal.innerHTML = `
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-coffee"></i> إدارة البوفيه</h3>
-                <div class="device-id-circle">${deviceId}</div>
-                <span class="close-btn">&times;</span>
-            </div>
-            
-            <div class="buffet-content">
-                <div class="buffet-section">
-                    <h4>الأقسام</h4>
-                    <div class="category-list" id="modalBuffetCategoryList">
-                        <!-- سيتم ملؤها بواسطة JavaScript -->
-                    </div>
-                </div>
-                
-                <div class="buffet-section">
-                    <h4>المنتجات</h4>
-                    <div class="product-grid" id="modalBuffetProductGrid">
-                        <!-- سيتم ملؤها بواسطة JavaScript -->
-                    </div>
-                </div>
-                
-                <div class="buffet-section">
-                    <div class="order-summary">
-                        <h4>الطلبات الحالية</h4>
-                        <ul id="modalBuffetOrderList">
-                            <li class="no-items">لا توجد طلبات</li>
-                        </ul>
-                        <div class="summary-total">
-                            <span>الإجمالي:</span>
-                            <span id="modalBuffetTotal">0.00 ج</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="modal-footer">
-                <button type="button" class="btn-cancel">إلغاء</button>
-                <button type="button" class="btn-save" onclick="saveModalBuffetOrder(${deviceId})">حفظ الطلبات</button>
-            </div>
-        </div>
-    `;
-    
-    modal.classList.add('active');
-    
-    // تحميل البيانات
-    renderModalBuffetCategories();
-    currentOrder = {};
-    updateModalOrderSummary();
-}
-
-function renderModalBuffetCategories() {
-    const container = document.getElementById('modalBuffetCategoryList');
-    if (!container) return;
-    
-    container.innerHTML = '';
-    
-    categories.forEach((category, index) => {
-        const btn = document.createElement('button');
-        btn.className = `category-btn ${index === 0 ? 'active' : ''}`;
-        btn.textContent = category.name;
-        btn.dataset.categoryId = category.id;
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('#modalBuffetCategoryList .category-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderModalBuffetProducts(category.id);
-        });
-        container.appendChild(btn);
-    });
-    
-    if (categories.length > 0) {
-        renderModalBuffetProducts(categories[0].id);
-    }
-}
-
-function renderModalBuffetProducts(categoryId) {
-    const container = document.getElementById('modalBuffetProductGrid');
-    if (!container) return;
-    
-    const categoryProducts = products.filter(p => p.category_id === categoryId);
-    container.innerHTML = '';
-    
-    categoryProducts.forEach(product => {
-        const productCard = document.createElement('div');
-        productCard.className = 'product-card';
-        productCard.innerHTML = `
-            <div class="product-icon">
-                <i class="${product.category?.icon_class || 'fas fa-box'}"></i>
-            </div>
-            <h4>${product.name}</h4>
-            <p class="price">${parseFloat(product.customer_price).toFixed(2)} ج</p>
-            <p class="stock">متوفر: ${product.stock_quantity} ${product.unit}</p>
-            <button class="add-to-order-btn" 
-                    onclick="addToModalOrder('${product.id}', '${product.name}', ${product.customer_price})"
-                    ${product.stock_quantity <= 0 ? 'disabled' : ''}>
-                <i class="fas fa-plus"></i>
-                إضافة
-            </button>
-        `;
-        container.appendChild(productCard);
-    });
-}
-
-function addToModalOrder(productId, productName, price) {
-    if (currentOrder[productId]) {
-        currentOrder[productId]++;
-    } else {
-        currentOrder[productId] = 1;
-    }
-    updateModalOrderSummary();
-    playNotificationSound('notification');
-    showNotification(`تم إضافة ${productName} إلى الطلب`, 'success');
-}
-
-function updateModalOrderSummary() {
-    const list = document.getElementById('modalBuffetOrderList');
-    const total = document.getElementById('modalBuffetTotal');
-    
-    if (!list || !total) return;
-    
-    list.innerHTML = '';
-    let totalAmount = 0;
-    
-    if (Object.keys(currentOrder).length === 0) {
-        list.innerHTML = '<li class="no-items">لا توجد طلبات</li>';
-    } else {
-        Object.entries(currentOrder).forEach(([productId, quantity]) => {
-            const product = products.find(p => p.id == productId);
-            if (product) {
-                const itemTotal = product.customer_price * quantity;
-                totalAmount += itemTotal;
-                
-                const li = document.createElement('li');
-                li.className = 'order-item';
-                li.innerHTML = `
-                    <span class="item-name">${product.name}</span>
-                    <div class="item-controls">
-                        <button onclick="decreaseModalQuantity(${productId})" class="qty-btn">-</button>
-                        <span class="quantity">${quantity}</span>
-                        <button onclick="increaseModalQuantity(${productId})" class="qty-btn">+</button>
-                        <span class="item-price">${itemTotal.toFixed(2)} ج</span>
-                        <button onclick="removeFromModalOrder(${productId})" class="remove-btn">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-                list.appendChild(li);
-            }
-        });
-    }
-    
-    total.textContent = totalAmount.toFixed(2) + ' ج';
-}
-
-function increaseModalQuantity(productId) {
-    currentOrder[productId]++;
-    updateModalOrderSummary();
-}
-
-function decreaseModalQuantity(productId) {
-    if (currentOrder[productId] > 1) {
-        currentOrder[productId]--;
-    } else {
-        delete currentOrder[productId];
-    }
-    updateModalOrderSummary();
-}
-
-function removeFromModalOrder(productId) {
-    delete currentOrder[productId];
-    updateModalOrderSummary();
-}
-
-async function saveModalBuffetOrder(deviceId) {
-    if (Object.keys(currentOrder).length === 0) {
-        showNotification('لم يتم إضافة أي طلبات', 'warning');
-        return;
-    }
-    
-    const device = devices.find(d => d.id === deviceId);
-    if (!device || !device.active_session) {
-        showNotification('لا توجد جلسة نشطة لهذا الجهاز', 'error');
-        return;
-    }
-    
-    const items = Object.entries(currentOrder).map(([product_id, quantity]) => ({
-        product_id: parseInt(product_id),
-        quantity: quantity
-    }));
-    
-    try {
-        await sendRequest(`/api/sessions/${device.active_session.id}/add-order`, 'POST', { items });
-        playNotificationSound('success');
-        showNotification('تمت إضافة الطلبات للفاتورة', 'success');
-        closeModal('bofeihDetailsModal');
-        loadPageData();
-        currentOrder = {};
-    } catch (error) {
-        playNotificationSound('error');
-        showNotification('فشل في إضافة الطلبات: ' + error.message, 'error');
-    }
-}
-
 function updateModalTimer(deviceId, session) {
     const updateTimer = () => {
         const startTime = new Date(session.start_time);
@@ -756,6 +529,78 @@ function updateModalTimer(deviceId, session) {
         modal.addEventListener('hidden', () => clearInterval(interval), { once: true });
     }
 }
+
+function addToOrder(productId, productName, price) {
+    if (currentOrder[productId]) {
+        currentOrder[productId]++;
+    } else {
+        currentOrder[productId] = 1;
+    }
+    updateOrderDisplay();
+    playNotificationSound('notification');
+    showNotification(`تم إضافة ${productName} إلى الطلب`, 'success');
+}
+
+function updateOrderDisplay() {
+    const orderItems = document.getElementById('buffetOrderList');
+    const orderTotal = document.getElementById('buffetTotal');
+    
+    if (!orderItems || !orderTotal) return;
+    
+    orderItems.innerHTML = '';
+    let total = 0;
+    
+    if (Object.keys(currentOrder).length === 0) {
+        orderItems.innerHTML = '<li class="no-items">لا توجد طلبات</li>';
+        orderTotal.textContent = '0.00';
+        return;
+    }
+    
+    Object.entries(currentOrder).forEach(([productId, quantity]) => {
+        const product = products.find(p => p.id == productId);
+        if (product) {
+            const itemTotal = product.customer_price * quantity;
+            total += itemTotal;
+            
+            const li = document.createElement('li');
+            li.className = 'order-item';
+            li.innerHTML = `
+                <span class="item-name">${product.name}</span>
+                <div class="item-controls">
+                    <button onclick="decreaseQuantity(${productId})" class="qty-btn">-</button>
+                    <span class="quantity">${quantity}</span>
+                    <button onclick="increaseQuantity(${productId})" class="qty-btn">+</button>
+                    <span class="item-price">${itemTotal.toFixed(2)} ج</span>
+                    <button onclick="removeFromOrder(${productId})" class="remove-btn">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            orderItems.appendChild(li);
+        }
+    });
+    
+    orderTotal.textContent = total.toFixed(2);
+}
+
+window.increaseQuantity = function(productId) {
+    currentOrder[productId]++;
+    updateOrderDisplay();
+};
+
+window.decreaseQuantity = function(productId) {
+    if (currentOrder[productId] > 1) {
+        currentOrder[productId]--;
+    } else {
+        delete currentOrder[productId];
+    }
+    updateOrderDisplay();
+};
+
+window.removeFromOrder = function(productId) {
+    delete currentOrder[productId];
+    updateOrderDisplay();
+};
 
 async function endSessionAndShowInvoice(deviceId) {
     const device = devices.find(d => d.id === deviceId);
@@ -850,72 +695,6 @@ function updateTimers() {
                     }
                 }
             }
-        }
-    });
-}
-
-function openEditTimeModal(session) {
-    const modal = document.createElement('div');
-    modal.className = 'modal active';
-    modal.id = 'editTimeModal';
-    modal.innerHTML = `
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-clock"></i> تعديل وقت الجلسة</h3>
-                <span class="close-btn" onclick="closeModal('editTimeModal')">&times;</span>
-            </div>
-            <form id="editTimeForm">
-                <div class="form-group">
-                    <label>الوقت الحالي للجلسة</label>
-                    <div class="current-time-display">
-                        <span id="currentSessionTime">جاري الحساب...</span>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="editHours">الساعات</label>
-                        <input type="number" id="editHours" min="0" max="24" value="0" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="editMinutes">الدقائق</label>
-                        <input type="number" id="editMinutes" min="0" max="59" value="0" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-cancel" onclick="closeModal('editTimeModal')">إلغاء</button>
-                    <button type="submit" class="btn-save">حفظ التعديل</button>
-                </div>
-            </form>
-        </div>
-    `;
-    document.body.appendChild(modal);
-    
-    // حساب الوقت الحالي
-    const startTime = new Date(session.start_time);
-    const now = new Date();
-    const diff = now - startTime;
-    const hours = Math.floor(diff / 3600000);
-    const minutes = Math.floor((diff % 3600000) / 60000);
-    
-    document.getElementById('currentSessionTime').textContent = `${hours} ساعة و ${minutes} دقيقة`;
-    document.getElementById('editHours').value = hours;
-    document.getElementById('editMinutes').value = minutes;
-    
-    // معالج النموذج
-    document.getElementById('editTimeForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const hours = parseInt(document.getElementById('editHours').value);
-        const minutes = parseInt(document.getElementById('editMinutes').value);
-        
-        try {
-            await sendRequest(`/api/sessions/${session.id}/update-time`, 'POST', { hours, minutes });
-            playNotificationSound('success');
-            showNotification('تم تحديث الوقت بنجاح', 'success');
-            closeModal('editTimeModal');
-            loadPageData();
-        } catch (error) {
-            playNotificationSound('error');
-            showNotification('فشل في تحديث الوقت: ' + error.message, 'error');
         }
     });
 }
@@ -1024,11 +803,6 @@ function closeModal(modalId) {
         // إعادة تعيين النماذج
         const form = modal.querySelector('form');
         if (form) form.reset();
-        
-        // إزالة المودالات المؤقتة
-        if (modalId === 'editTimeModal') {
-            modal.remove();
-        }
     }
 }
 
@@ -1110,22 +884,6 @@ function showNotification(message, type = 'info') {
     }, 4000);
 }
 
-// دالة البحث في الأجهزة
-function filterDevices(searchTerm) {
-    const cards = document.querySelectorAll('.device-card');
-    cards.forEach(card => {
-        const deviceName = card.querySelector('.device-info h3').textContent.toLowerCase();
-        const deviceType = card.querySelector('.device-info .device-id').textContent.toLowerCase();
-        
-        if (deviceName.includes(searchTerm.toLowerCase()) || 
-            deviceType.includes(searchTerm.toLowerCase())) {
-            card.style.display = 'flex';
-        } else {
-            card.style.display = 'none';
-        }
-    });
-}
-
 // ربط الأحداث العامة للمودالات
 document.addEventListener('click', function(e) {
     // فتح مودال البوفيه
@@ -1133,12 +891,59 @@ document.addEventListener('click', function(e) {
         e.preventDefault();
         const deviceId = document.querySelector('.device-id-in-modal')?.textContent;
         if (deviceId) {
-            openBofeihModal(deviceId);
+            openBuffetModal(deviceId);
         }
     }
     
     // إغلاق مودال البوفيه
-    if (e.target.closest('#bofeihDetailsModal .close-btn, #bofeihDetailsModal .btn-cancel')) {
-        closeModal('bofeihDetailsModal');
+    if (e.target.closest('#buffetModal .close-btn, #buffetModal .btn-cancel')) {
+        closeModal('buffetModal');
     }
 });
+
+function openBuffetModal(deviceId) {
+    const modal = document.getElementById('buffetModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        // إعادة تعيين الطلب
+        currentOrder = {};
+        updateOrderDisplay();
+        
+        // تحديث رقم الجهاز
+        document.getElementById('buffetTableId').textContent = deviceId;
+    }
+}
+
+async function saveBuffetOrder() {
+    if (Object.keys(currentOrder).length === 0) {
+        showNotification('لم يتم إضافة أي طلبات', 'warning');
+        return;
+    }
+    
+    const deviceId = document.getElementById('buffetTableId').textContent;
+    const device = devices.find(d => d.id == deviceId);
+    
+    if (!device || !device.active_session) {
+        showNotification('لا توجد جلسة نشطة لهذا الجهاز', 'error');
+        return;
+    }
+    
+    const items = Object.entries(currentOrder).map(([product_id, quantity]) => ({
+        product_id: parseInt(product_id),
+        quantity: quantity
+    }));
+    
+    try {
+        await sendRequest(`/api/sessions/${device.active_session.id}/add-order`, 'POST', { items });
+        playNotificationSound('success');
+        showNotification('تمت إضافة الطلبات للفاتورة', 'success');
+        closeModal('buffetModal');
+        loadPageData();
+        currentOrder = {};
+    } catch (error) {
+        playNotificationSound('error');
+        showNotification('فشل في إضافة الطلبات: ' + error.message, 'error');
+    }
+}
