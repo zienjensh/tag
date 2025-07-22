@@ -1,6 +1,8 @@
-// js/login.js - النسخة المحسنة مع تحميل بيانات الموقع
+// js/login.js - النسخة المحسنة والمستقرة
 
 document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🚀 بدء تحميل صفحة تسجيل الدخول...');
+    
     // تحميل بيانات الموقع من قاعدة البيانات
     await loadSiteSettings();
     
@@ -10,31 +12,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('loadingScreen').style.display = 'none';
     }, 2000);
 
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await handleLogin();
-        });
-    }
+    // ربط أحداث النموذج
+    setupFormEvents();
     
-    // إغلاق مودال الخطأ
-    document.getElementById('closeErrorModal')?.addEventListener('click', closeErrorModal);
-    
-    // إضافة مستمع لمفتاح Enter
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !document.querySelector('.modal.active')) {
-            const loginBtn = document.getElementById('loginButton');
-            if (loginBtn && !loginBtn.disabled) {
-                loginBtn.click();
-            }
-        }
-    });
+    console.log('✅ تم تحميل صفحة تسجيل الدخول بنجاح');
 });
 
 // تحميل إعدادات الموقع من قاعدة البيانات
 async function loadSiteSettings() {
     try {
+        console.log('📡 جاري تحميل إعدادات الموقع...');
+        
         const response = await fetch('http://127.0.0.1:8000/api/settings', {
             method: 'GET',
             headers: {
@@ -45,6 +33,7 @@ async function loadSiteSettings() {
 
         if (response.ok) {
             const settings = await response.json();
+            console.log('✅ تم تحميل إعدادات الموقع:', settings);
             
             // تحديث اسم الموقع
             const siteName = settings.store_name || 'مقهى النجمة';
@@ -58,27 +47,56 @@ async function loadSiteSettings() {
                 document.getElementById('siteLogo').src = logoUrl;
                 document.getElementById('loadingLogo').src = logoUrl;
             }
+        } else {
+            console.warn('⚠️ فشل تحميل إعدادات الموقع، استخدام القيم الافتراضية');
         }
     } catch (error) {
-        console.log('فشل تحميل إعدادات الموقع:', error);
+        console.error('❌ خطأ في تحميل إعدادات الموقع:', error);
         // استخدام القيم الافتراضية
     }
 }
 
-async function handleLogin() {
+// إعداد أحداث النموذج
+function setupFormEvents() {
+    const loginForm = document.getElementById('loginForm');
+    const loginButton = document.getElementById('loginButton');
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+        console.log('✅ تم ربط حدث النموذج');
+    }
+    
+    // إضافة مستمع لمفتاح Enter
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !loginButton.disabled) {
+            e.preventDefault();
+            handleLogin(e);
+        }
+    });
+    
+    console.log('✅ تم إعداد جميع الأحداث');
+}
+
+async function handleLogin(event) {
+    event.preventDefault();
+    console.log('🔐 بدء عملية تسجيل الدخول...');
+    
     const loginButton = document.getElementById('loginButton');
     const usernameInput = document.getElementById('username');
     const passwordInput = document.getElementById('password');
     
-    // تفعيل حالة التحميل
-    loginButton.classList.add('loading');
-    loginButton.disabled = true;
+    // التحقق من وجود البيانات
+    if (!usernameInput.value.trim() || !passwordInput.value.trim()) {
+        showError('يرجى إدخال اسم المستخدم وكلمة المرور');
+        return;
+    }
     
-    // إضافة تأثيرات بصرية
-    usernameInput.style.borderColor = 'var(--gray-300)';
-    passwordInput.style.borderColor = 'var(--gray-300)';
+    // تفعيل حالة التحميل
+    setLoadingState(true);
     
     try {
+        console.log('📡 إرسال طلب تسجيل الدخول...');
+        
         const response = await fetch('http://127.0.0.1:8000/api/login', {
             method: 'POST',
             headers: {
@@ -87,12 +105,13 @@ async function handleLogin() {
             },
             credentials: 'include',
             body: JSON.stringify({ 
-                username: usernameInput.value, 
-                password: passwordInput.value 
+                username: usernameInput.value.trim(), 
+                password: passwordInput.value.trim() 
             })
         });
 
         const data = await response.json();
+        console.log('📨 استجابة الخادم:', data);
 
         if (!response.ok) {
             throw new Error(data.message || 'فشل تسجيل الدخول');
@@ -103,8 +122,11 @@ async function handleLogin() {
         sessionStorage.setItem('userPages', JSON.stringify(data.pages));
         sessionStorage.setItem('authToken', data.token);
         
+        console.log('✅ تم حفظ بيانات المستخدم');
+        
         // تأثير نجاح
         showSuccessAnimation();
+        showSuccess('تم تسجيل الدخول بنجاح! جاري التوجيه...');
         
         // انتظار قصير لإظهار التأثير ثم التوجيه
         setTimeout(() => {
@@ -112,19 +134,36 @@ async function handleLogin() {
         }, 1500);
 
     } catch (error) {
+        console.error('❌ خطأ في تسجيل الدخول:', error);
+        
         // تأثير خطأ
         showErrorAnimation();
-        
-        // إظهار مودال الخطأ
-        showErrorModal(error.message);
+        showError(error.message);
         
         // إعادة تعيين الزر
-        loginButton.classList.remove('loading');
-        loginButton.disabled = false;
+        setLoadingState(false);
         
         // تمييز الحقول بالأحمر
         usernameInput.style.borderColor = 'var(--error-color)';
         passwordInput.style.borderColor = 'var(--error-color)';
+    }
+}
+
+function setLoadingState(loading) {
+    const loginButton = document.getElementById('loginButton');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    
+    if (loading) {
+        loginButton.classList.add('loading');
+        loginButton.disabled = true;
+        usernameInput.disabled = true;
+        passwordInput.disabled = true;
+    } else {
+        loginButton.classList.remove('loading');
+        loginButton.disabled = false;
+        usernameInput.disabled = false;
+        passwordInput.disabled = false;
     }
 }
 
@@ -162,20 +201,65 @@ function showErrorAnimation() {
     }, 500);
 }
 
-function showErrorModal(message) {
-    const errorModal = document.getElementById('errorModal');
-    const errorMessageText = document.getElementById('errorMessageText');
-    
-    errorMessageText.textContent = message;
-    errorModal.classList.add('active');
-    
-    // تشغيل صوت خطأ (اختياري)
-    playErrorSound();
+function showSuccess(message) {
+    showNotification(message, 'success');
 }
 
-function closeErrorModal() {
-    const errorModal = document.getElementById('errorModal');
-    errorModal.classList.remove('active');
+function showError(message) {
+    showNotification(message, 'error');
+}
+
+function showNotification(message, type = 'info') {
+    // إزالة الإشعارات السابقة
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(n => n.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    
+    const icons = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        warning: 'fas fa-exclamation-triangle',
+        info: 'fas fa-info-circle'
+    };
+    
+    notification.innerHTML = `
+        <i class="${icons[type]}"></i>
+        <span>${message}</span>
+    `;
+    
+    // إضافة الأنماط
+    notification.style.cssText = `
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        padding: 1rem 1.5rem;
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--shadow-xl);
+        border-left: 4px solid var(--${type === 'error' ? 'error' : type === 'warning' ? 'warning' : type === 'success' ? 'success' : 'primary'}-color);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 500;
+        animation: slideInRight 0.3s ease-out;
+        max-width: 400px;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // إزالة الإشعار بعد 4 ثوانٍ
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease-out';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 4000);
 }
 
 function togglePassword() {
@@ -188,16 +272,6 @@ function togglePassword() {
     } else {
         passwordInput.type = 'password';
         toggleBtn.className = 'fas fa-eye';
-    }
-}
-
-function playErrorSound() {
-    try {
-        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
-        audio.volume = 0.3;
-        audio.play().catch(e => console.log('Sound play failed:', e));
-    } catch (e) {
-        console.log('Sound error:', e);
     }
 }
 
@@ -216,6 +290,28 @@ style.textContent = `
         100% { opacity: 0; }
     }
     
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
     .input-wrapper input:invalid {
         border-color: var(--error-color);
         box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.1);
@@ -223,6 +319,10 @@ style.textContent = `
     
     .input-wrapper input:valid {
         border-color: var(--success-color);
+    }
+    
+    .notification {
+        font-family: 'Cairo', sans-serif;
     }
 `;
 document.head.appendChild(style);

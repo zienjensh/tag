@@ -1,13 +1,18 @@
-// js/customer.js - النسخة المحسنة والكاملة مع إصلاح جميع المشاكل
+// js/customer.js - النسخة المحسنة والمستقرة
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 بدء تحميل صفحة العملاء...');
+    
     // التأكد من بناء القائمة الجانبية أولاً
     if (typeof buildSidebar === 'function') {
         buildSidebar();
     }
-    loadPageData();
+    
     setupEventListeners();
+    loadPageData();
     initializeNotificationSounds();
+    
+    console.log('✅ تم تحميل صفحة العملاء بنجاح');
 });
 
 const API_BASE_URL = 'http://127.0.0.1:8000/api';
@@ -36,13 +41,17 @@ function playNotificationSound(type = 'notification') {
 }
 
 function setupEventListeners() {
+    console.log('🔗 إعداد مستمعي الأحداث...');
+    
     // الأزرار الثابتة
     const addCustomerBtn = document.getElementById('addCustomerModalBtn');
     if (addCustomerBtn) {
         addCustomerBtn.addEventListener('click', () => {
-            console.log('Add customer button clicked');
+            console.log('🔘 تم الضغط على زر إضافة عميل');
             openModal('addCustomerModal');
         });
+    } else {
+        console.error('❌ لم يتم العثور على زر إضافة العميل');
     }
     
     // نماذج الإضافة والتعديل
@@ -94,13 +103,19 @@ function setupEventListeners() {
         if (action === 'delete') deleteCustomer(numericId);
         if (action === 'view-details') viewCustomerDetails(numericId);
     });
+    
+    console.log('✅ تم إعداد جميع مستمعي الأحداث');
 }
 
 async function loadPageData(searchTerm = '') {
+    console.log('📡 جاري تحميل بيانات العملاء...');
     showNotification('جاري تحميل بيانات العملاء...', 'info');
+    
     try {
         const url = searchTerm ? `customers?search=${encodeURIComponent(searchTerm)}` : 'customers';
         const customers = await sendRequest(url, 'GET');
+        
+        console.log('📨 تم استلام بيانات العملاء:', customers);
         
         renderCustomerTable(customers);
         updateSummaryCards(customers);
@@ -108,14 +123,19 @@ async function loadPageData(searchTerm = '') {
         playNotificationSound('success');
         showNotification('تم تحميل البيانات بنجاح', 'success');
     } catch (error) {
+        console.error('❌ خطأ في تحميل البيانات:', error);
         playNotificationSound('error');
         showNotification('فشل تحميل البيانات: ' + error.message, 'error');
     }
 }
 
 function renderCustomerTable(customers) {
+    console.log('🎨 رسم جدول العملاء...');
     const tableBody = document.getElementById('customerTableBody');
-    if (!tableBody) return;
+    if (!tableBody) {
+        console.error('❌ لم يتم العثور على جسم الجدول');
+        return;
+    }
     
     tableBody.innerHTML = '';
     
@@ -167,6 +187,8 @@ function renderCustomerTable(customers) {
         `;
         tableBody.appendChild(row);
     });
+    
+    console.log(`✅ تم رسم ${customers.length} عميل في الجدول`);
 }
 
 function updateSummaryCards(customers) {
@@ -179,6 +201,8 @@ function updateSummaryCards(customers) {
 }
 
 async function saveCustomer() {
+    console.log('💾 حفظ عميل جديد...');
+    
     const form = document.getElementById('addCustomerForm');
     const data = {
         name: form.customerName.value,
@@ -200,6 +224,8 @@ async function saveCustomer() {
 }
 
 async function editCustomer(id) {
+    console.log('✏️ تعديل العميل:', id);
+    
     try {
         const customer = await sendRequest(`customers/${id}`, 'GET');
         if (!customer) return;
@@ -278,17 +304,18 @@ async function viewCustomerDetails(id) {
 
 // دوال المساعدة
 function openModal(modalId) { 
-    console.log('Opening modal:', modalId);
+    console.log('🔓 فتح المودال:', modalId);
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     } else {
-        console.error('Modal not found:', modalId);
+        console.error('❌ لم يتم العثور على المودال:', modalId);
     }
 }
 
 function closeModal(modalId) { 
+    console.log('🔒 إغلاق المودال:', modalId);
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.remove('active');

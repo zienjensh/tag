@@ -1,14 +1,18 @@
-// js/employees.js - النسخة المحسنة والكاملة مع إصلاح جميع المشاكل
+// js/employees.js - النسخة المحسنة والمستقرة
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 بدء تحميل صفحة الموظفين...');
+    
     // استدعاء الملف العام أولاً (للتأكد من بناء القائمة الجانبية)
     if (typeof buildSidebar === 'function') {
         buildSidebar();
     }
-    // ثم تحميل بيانات الصفحة الحالية
-    loadPageData();
+    
     setupEventListeners();
+    loadPageData();
     initializeNotificationSounds();
+    
+    console.log('✅ تم تحميل صفحة الموظفين بنجاح');
 });
 
 // --- متغيرات عامة ---
@@ -39,12 +43,16 @@ function playNotificationSound(type = 'notification') {
 
 // --- إعداد الواجهة والوظائف الأساسية ---
 function setupEventListeners() {
+    console.log('🔗 إعداد مستمعي الأحداث...');
+    
     const addEmployeeBtn = document.getElementById('addEmployeeModalBtn');
     if (addEmployeeBtn) {
         addEmployeeBtn.addEventListener('click', () => {
-            console.log('Add employee button clicked');
+            console.log('🔘 تم الضغط على زر إضافة موظف');
             openAddEmployeeModal();
         });
+    } else {
+        console.error('❌ لم يتم العثور على زر إضافة الموظف');
     }
     
     const addForm = document.getElementById('addEmployeeForm');
@@ -79,16 +87,22 @@ function setupEventListeners() {
         if (action === 'edit') editEmployee(id);
         if (action === 'delete') deleteEmployee(id);
     });
+    
+    console.log('✅ تم إعداد جميع مستمعي الأحداث');
 }
 
 // --- تحميل البيانات وعرضها ---
 async function loadPageData() {
+    console.log('📡 جاري تحميل بيانات الصفحة...');
     showNotification('جاري تحميل البيانات...', 'info');
+    
     try {
         const [users, pages] = await Promise.all([
             sendRequest('users', 'GET'),
             sendRequest('pages', 'GET')
         ]);
+        
+        console.log('📨 تم استلام البيانات:', { users, pages });
         
         allPages = pages;
         renderEmployeeTable(users);
@@ -96,14 +110,19 @@ async function loadPageData() {
         playNotificationSound('success');
         showNotification('تم تحميل البيانات بنجاح', 'success');
     } catch (error) {
+        console.error('❌ خطأ في تحميل البيانات:', error);
         playNotificationSound('error');
         showNotification('فشل تحميل البيانات: ' + error.message, 'error');
     }
 }
 
 function renderEmployeeTable(users) {
+    console.log('🎨 رسم جدول الموظفين...');
     const tableBody = document.getElementById('employeeTableBody');
-    if (!tableBody) return;
+    if (!tableBody) {
+        console.error('❌ لم يتم العثور على جسم الجدول');
+        return;
+    }
     
     tableBody.innerHTML = '';
     
@@ -146,13 +165,20 @@ function renderEmployeeTable(users) {
         `;
         tableBody.appendChild(row);
     });
+    
+    console.log(`✅ تم رسم ${users.length} موظف في الجدول`);
 }
 
 // --- دوال إضافة وتعديل وحذف الموظفين ---
 
 function openAddEmployeeModal() {
+    console.log('🔓 فتح مودال إضافة موظف...');
+    
     const grid = document.getElementById('addPermissionsGrid');
-    if (!grid) return;
+    if (!grid) {
+        console.error('❌ لم يتم العثور على شبكة الصلاحيات');
+        return;
+    }
     
     grid.innerHTML = '';
     allPages.forEach(page => {
@@ -172,6 +198,8 @@ function openAddEmployeeModal() {
 }
 
 async function saveEmployee() {
+    console.log('💾 حفظ موظف جديد...');
+    
     const form = document.getElementById('addEmployeeForm');
     const selectedPages = Array.from(form.querySelectorAll('input[name="pages"]:checked')).map(cb => cb.value);
     
@@ -198,6 +226,8 @@ async function saveEmployee() {
 }
 
 async function editEmployee(id) {
+    console.log('✏️ تعديل الموظف:', id);
+    
     try {
         const user = await sendRequest(`users/${id}`, 'GET');
         if (!user) return;
@@ -277,17 +307,18 @@ async function deleteEmployee(id) {
 
 // --- دوال المساعدة (API & Notifications) ---
 function openModal(modalId) { 
-    console.log('Opening modal:', modalId);
+    console.log('🔓 فتح المودال:', modalId);
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     } else {
-        console.error('Modal not found:', modalId);
+        console.error('❌ لم يتم العثور على المودال:', modalId);
     }
 }
 
 function closeModal(modalId) { 
+    console.log('🔒 إغلاق المودال:', modalId);
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.remove('active');

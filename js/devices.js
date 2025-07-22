@@ -1,11 +1,19 @@
 // devices.js - النسخة المحسنة والكاملة مع إصلاح جميع المشاكل
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (typeof buildSidebar === 'function') buildSidebar();
-    loadPageData();
+    console.log('🚀 بدء تحميل صفحة الأجهزة...');
+    
+    if (typeof buildSidebar === 'function') {
+        buildSidebar();
+    }
+    
+    initializePage();
     setupEventListeners();
+    loadPageData();
     setInterval(updateTimers, 1000); // تحديث العدادات كل ثانية
-    initializeNotificationSounds(); // تهيئة الأصوات
+    initializeNotificationSounds();
+    
+    console.log('✅ تم تحميل صفحة الأجهزة بنجاح');
 });
 
 let devices = [];
@@ -38,26 +46,53 @@ function playNotificationSound(type = 'notification') {
     }
 }
 
+function initializePage() {
+    console.log('🔧 تهيئة الصفحة...');
+    // تفعيل التبويب الأول
+    switchTab('devices');
+}
+
 function setupEventListeners() {
+    console.log('🔗 إعداد مستمعي الأحداث...');
+    
     // أزرار إضافة الأجهزة
-    document.getElementById('addDeviceModalBtn')?.addEventListener('click', () => openModal('addDeviceModal'));
+    const addDeviceBtn = document.getElementById('addDeviceModalBtn');
+    if (addDeviceBtn) {
+        addDeviceBtn.addEventListener('click', () => {
+            console.log('🔘 تم الضغط على زر إضافة جهاز');
+            openModal('addDeviceModal');
+        });
+    }
     
     // نماذج الحفظ
-    document.getElementById('addDeviceForm')?.addEventListener('submit', e => { 
-        e.preventDefault(); 
-        saveDevice(); 
-    });
+    const addDeviceForm = document.getElementById('addDeviceForm');
+    if (addDeviceForm) {
+        addDeviceForm.addEventListener('submit', e => { 
+            e.preventDefault(); 
+            saveDevice(); 
+        });
+    }
     
-    document.getElementById('startSessionForm')?.addEventListener('submit', e => { 
-        e.preventDefault(); 
-        startSession(); 
-    });
+    const startSessionForm = document.getElementById('startSessionForm');
+    if (startSessionForm) {
+        startSessionForm.addEventListener('submit', e => { 
+            e.preventDefault(); 
+            startSession(); 
+        });
+    }
     
-    document.getElementById('saveBuffetOrderBtn')?.addEventListener('click', saveBuffetOrder);
+    const saveBuffetOrderBtn = document.getElementById('saveBuffetOrderBtn');
+    if (saveBuffetOrderBtn) {
+        saveBuffetOrderBtn.addEventListener('click', saveBuffetOrder);
+    }
 
     // التنقل بين التبويبات
     document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+        btn.addEventListener('click', () => {
+            const tabId = btn.getAttribute('data-tab');
+            console.log('🔄 تبديل التبويب إلى:', tabId);
+            switchTab(tabId);
+        });
     });
 
     // Event Delegation للأزرار الديناميكية
@@ -68,13 +103,17 @@ function setupEventListeners() {
         // أزرار الإغلاق
         if (button.classList.contains('close-btn') || button.classList.contains('btn-cancel')) {
             const modal = button.closest('.modal');
-            if (modal) closeModal(modal.id);
+            if (modal) {
+                console.log('❌ إغلاق المودال:', modal.id);
+                closeModal(modal.id);
+            }
             return;
         }
 
         // أزرار الإجراءات على الأجهزة
         const { action, id } = button.dataset;
         if (action && id) {
+            console.log('⚡ تنفيذ إجراء:', action, 'على الجهاز:', id);
             handleDeviceAction(action, parseInt(id));
         }
 
@@ -90,12 +129,17 @@ function setupEventListeners() {
             addToOrder(productId, productName, productPrice);
         }
     });
+    
+    console.log('✅ تم إعداد جميع مستمعي الأحداث');
 }
 
 async function loadPageData() {
+    console.log('📡 جاري تحميل بيانات الصفحة...');
     showNotification('جاري تحميل البيانات...', 'info');
+    
     try {
         const data = await sendRequest('/api/devices-page-data', 'GET');
+        console.log('📨 تم استلام البيانات:', data);
         
         devices = data.devices || [];
         deviceTypes = data.deviceTypes || [];
@@ -111,15 +155,21 @@ async function loadPageData() {
         
         playNotificationSound('success');
         showNotification('تم تحميل البيانات بنجاح', 'success');
+        console.log('✅ تم تحميل جميع البيانات بنجاح');
     } catch (error) {
+        console.error('❌ خطأ في تحميل البيانات:', error);
         playNotificationSound('error');
         showNotification('فشل تحميل البيانات: ' + error.message, 'error');
     }
 }
 
 function renderDeviceCards() {
+    console.log('🎨 رسم بطاقات الأجهزة...');
     const container = document.getElementById('devicesGridContainer');
-    if (!container) return;
+    if (!container) {
+        console.error('❌ لم يتم العثور على حاوية الأجهزة');
+        return;
+    }
     
     container.innerHTML = '';
     
@@ -138,6 +188,8 @@ function renderDeviceCards() {
         const card = createDeviceCard(device);
         container.appendChild(card);
     });
+    
+    console.log(`✅ تم رسم ${devices.length} بطاقة جهاز`);
 }
 
 function createDeviceCard(device) {
@@ -218,12 +270,12 @@ function createDeviceCard(device) {
                 </button>
             ` : ''}
             
-            <button class="action-btn secondary btn-invoice-bofeih" data-action="invoice" data-id="${device.id}">
+            <button class="action-btn secondary" data-action="invoice" data-id="${device.id}">
                 <i class="fas fa-receipt"></i>
                 <span>الفاتورة والبوفيه</span>
             </button>
             
-            <button class="action-btn info btn-device-details" data-action="details" data-id="${device.id}">
+            <button class="action-btn info" data-action="details" data-id="${device.id}">
                 <i class="fas fa-info-circle"></i>
                 <span>التفاصيل</span>
             </button>
@@ -236,10 +288,17 @@ function createDeviceCard(device) {
 function updateSummaryCards(stats) {
     if (!stats) return;
     
-    document.getElementById('totalDevices').textContent = stats.totalDevices || 0;
-    document.getElementById('busyDevices').textContent = stats.busyDevices || 0;
-    document.getElementById('availableDevices').textContent = stats.availableDevices || 0;
-    document.getElementById('todayDevicesRevenue').textContent = parseFloat(stats.todayRevenue || 0).toFixed(2);
+    console.log('📊 تحديث بطاقات الإحصائيات:', stats);
+    
+    const totalDevicesEl = document.getElementById('totalDevices');
+    const busyDevicesEl = document.getElementById('busyDevices');
+    const availableDevicesEl = document.getElementById('availableDevices');
+    const todayRevenueEl = document.getElementById('todayDevicesRevenue');
+    
+    if (totalDevicesEl) totalDevicesEl.textContent = stats.totalDevices || 0;
+    if (busyDevicesEl) busyDevicesEl.textContent = stats.busyDevices || 0;
+    if (availableDevicesEl) availableDevicesEl.textContent = stats.availableDevices || 0;
+    if (todayRevenueEl) todayRevenueEl.textContent = parseFloat(stats.todayRevenue || 0).toFixed(2);
 }
 
 function populateDeviceTypeSelect() {
@@ -358,7 +417,12 @@ function renderInvoicesTable(invoices) {
 function handleDeviceAction(action, id) {
     currentEditingId = id;
     const device = devices.find(d => d.id === id);
-    if (!device) return;
+    if (!device) {
+        console.error('❌ لم يتم العثور على الجهاز:', id);
+        return;
+    }
+
+    console.log('⚡ تنفيذ إجراء:', action, 'على الجهاز:', device.name);
 
     switch(action) {
         case 'start':
@@ -396,6 +460,8 @@ function handleDeviceAction(action, id) {
 
 // مودال الفاتورة والبوفيه الموحد
 function openInvoiceBofeihModal(deviceId) {
+    console.log('🧾 فتح مودال الفاتورة والبوفيه للجهاز:', deviceId);
+    
     const device = devices.find(d => d.id === deviceId);
     if (!device) return;
     
@@ -700,6 +766,8 @@ function updateTimers() {
 }
 
 function showDeviceDetails(device) {
+    console.log('📋 عرض تفاصيل الجهاز:', device.name);
+    
     const modal = document.createElement('div');
     modal.className = 'modal active';
     modal.innerHTML = `
@@ -765,6 +833,8 @@ async function deleteDevice(deviceId) {
 }
 
 function switchTab(tabId) {
+    console.log('🔄 تبديل التبويب إلى:', tabId);
+    
     if (!tabId) return;
     
     // إخفاء جميع المحتويات
@@ -781,20 +851,35 @@ function switchTab(tabId) {
     const contentToShow = document.getElementById(`${tabId}-content`);
     const buttonToActivate = document.querySelector(`[data-tab="${tabId}"]`);
     
-    if (contentToShow) contentToShow.classList.add('active');
-    if (buttonToActivate) buttonToActivate.classList.add('active');
+    if (contentToShow) {
+        contentToShow.classList.add('active');
+        console.log('✅ تم إظهار المحتوى:', `${tabId}-content`);
+    } else {
+        console.error('❌ لم يتم العثور على المحتوى:', `${tabId}-content`);
+    }
+    
+    if (buttonToActivate) {
+        buttonToActivate.classList.add('active');
+        console.log('✅ تم تفعيل الزر:', tabId);
+    } else {
+        console.error('❌ لم يتم العثور على الزر:', tabId);
+    }
 }
 
 // دوال المساعدة
 function openModal(modalId) {
+    console.log('🔓 فتح المودال:', modalId);
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
+    } else {
+        console.error('❌ لم يتم العثور على المودال:', modalId);
     }
 }
 
 function closeModal(modalId) {
+    console.log('🔒 إغلاق المودال:', modalId);
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.remove('active');
@@ -902,6 +987,8 @@ document.addEventListener('click', function(e) {
 });
 
 function openBuffetModal(deviceId) {
+    console.log('☕ فتح مودال البوفيه للجهاز:', deviceId);
+    
     const modal = document.getElementById('buffetModal');
     if (modal) {
         modal.classList.add('active');
@@ -912,7 +999,10 @@ function openBuffetModal(deviceId) {
         updateOrderDisplay();
         
         // تحديث رقم الجهاز
-        document.getElementById('buffetTableId').textContent = deviceId;
+        const buffetTableIdEl = document.getElementById('buffetTableId');
+        if (buffetTableIdEl) {
+            buffetTableIdEl.textContent = deviceId;
+        }
     }
 }
 
@@ -922,7 +1012,7 @@ async function saveBuffetOrder() {
         return;
     }
     
-    const deviceId = document.getElementById('buffetTableId').textContent;
+    const deviceId = document.getElementById('buffetTableId')?.textContent;
     const device = devices.find(d => d.id == deviceId);
     
     if (!device || !device.active_session) {

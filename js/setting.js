@@ -1,13 +1,18 @@
-// js/setting.js - النسخة المحسنة والكاملة مع إصلاح جميع المشاكل
+// js/setting.js - النسخة المحسنة والمستقرة
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🚀 بدء تحميل صفحة الإعدادات...');
+    
     // main.js يهتم بالقائمة الجانبية، هنا نهتم فقط ببيانات الصفحة
     if (typeof buildSidebar === 'function') {
         buildSidebar();
     }
+    
     setupSettingsEventListeners();
     loadSettingsPageData();
     initializeNotificationSounds();
+    
+    console.log('✅ تم تحميل صفحة الإعدادات بنجاح');
 });
 
 const API_BASE_URL = 'http://127.0.0.1:8000/api';
@@ -36,6 +41,8 @@ function playNotificationSound(type = 'notification') {
 }
 
 function setupSettingsEventListeners() {
+    console.log('🔗 إعداد مستمعي الأحداث...');
+    
     // مراقبة أي تغيير في النموذج لتفعيل زر الحفظ
     const settingsForm = document.getElementById('settingsForm');
     if (settingsForm) {
@@ -62,8 +69,14 @@ function setupSettingsEventListeners() {
 
     // أزرار التنقل بين التبويبات
     document.querySelectorAll('.tab-btn').forEach(tab => {
-        tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+        tab.addEventListener('click', () => {
+            const tabId = tab.getAttribute('data-tab');
+            console.log('🔄 تبديل التبويب إلى:', tabId);
+            switchTab(tabId);
+        });
     });
+    
+    console.log('✅ تم إعداد جميع مستمعي الأحداث');
 }
 
 function switchTab(tabId) {
@@ -75,13 +88,17 @@ function switchTab(tabId) {
 }
 
 async function loadSettingsPageData() {
+    console.log('📡 جاري تحميل إعدادات الصفحة...');
     showNotification('جاري تحميل الإعدادات...', 'info');
+    
     try {
         const [settings, users, pages] = await Promise.all([
             sendRequest('settings', 'GET'),
             sendRequest('users', 'GET'),
             sendRequest('pages', 'GET')
         ]);
+
+        console.log('📨 تم استلام البيانات:', { settings, users, pages });
 
         allPages = pages;
         populateSettingsForm(settings);
@@ -99,12 +116,15 @@ async function loadSettingsPageData() {
         playNotificationSound('success');
         showNotification('تم تحميل الإعدادات بنجاح', 'success');
     } catch (error) {
+        console.error('❌ خطأ في تحميل البيانات:', error);
         playNotificationSound('error');
         showNotification("فشل تحميل البيانات الأولية: " + error.message, "error");
     }
 }
 
 function populateSettingsForm(settings) {
+    console.log('📝 ملء نموذج الإعدادات...');
+    
     // ملء الحقول بالقيم المحفوظة
     const fields = ['store_name', 'complaint_number', 'reservation_number', 'max_discount', 'max_delete_time'];
     fields.forEach(field => {
@@ -118,7 +138,7 @@ function populateSettingsForm(settings) {
     if (settings.store_logo) {
         const logoImg = document.getElementById('currentLogo');
         if (logoImg) {
-            logoImg.src = `/storage/${settings.store_logo}`;
+            logoImg.src = `http://127.0.0.1:8000/storage/${settings.store_logo}`;
         }
     }
     
@@ -217,6 +237,7 @@ async function saveAllSettings() {
         return;
     }
     
+    console.log('💾 حفظ جميع الإعدادات...');
     showNotification('جاري حفظ الإعدادات...', 'info');
     
     try {
@@ -253,6 +274,7 @@ async function saveAllSettings() {
         await loadSettingsPageData();
         
     } catch (error) {
+        console.error('❌ خطأ في حفظ الإعدادات:', error);
         playNotificationSound('error');
         showNotification(`حدث خطأ أثناء الحفظ: ${error.message}`, 'error');
     }

@@ -1,14 +1,18 @@
-// js/inventory.js - النسخة المحسنة والكاملة مع إصلاح جميع المشاكل
+// js/inventory.js - النسخة المحسنة والمستقرة
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('🚀 بدء تحميل صفحة المخزون والأسعار...');
+    
     // التأكد من بناء القائمة الجانبية أولاً
     if (typeof buildSidebar === 'function') {
         buildSidebar();
     }
+    
     setupEventListeners();
     loadInitialData();
     initializeNotificationSounds();
+    
+    console.log('✅ تم تحميل صفحة المخزون بنجاح');
 });
 
 // --- متغيرات عامة ---
@@ -41,7 +45,7 @@ function playNotificationSound(type = 'notification') {
 // --- إعداد الواجهة والوظائف الأساسية ---
 
 function setupEventListeners() {
-    console.log('2. بدء إعداد مستمعي الأحداث');
+    console.log('🔗 إعداد مستمعي الأحداث...');
     
     // ربط الأزرار الثابتة
     document.getElementById('sidebarToggle')?.addEventListener('click', toggleSidebar);
@@ -98,10 +102,13 @@ function setupEventListeners() {
             functions[type]?.[action]?.(numericId);
         }
     });
-    console.log('3. تم الانتهاء من إعداد مستمعي الأحداث.');
+    
+    console.log('✅ تم إعداد جميع مستمعي الأحداث');
 }
 
 function switchTab(tabId) {
+    console.log('🔄 تبديل التبويب إلى:', tabId);
+    
     if (!tabId) return;
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -112,17 +119,18 @@ function switchTab(tabId) {
 }
 
 function openModal(modalId) { 
-    console.log('Opening modal:', modalId);
+    console.log('🔓 فتح المودال:', modalId);
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.add('active');
         document.body.style.overflow = 'hidden';
     } else {
-        console.error('Modal not found:', modalId);
+        console.error('❌ لم يتم العثور على المودال:', modalId);
     }
 }
 
 function closeModal(modalId) { 
+    console.log('🔒 إغلاق المودال:', modalId);
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.remove('active');
@@ -137,8 +145,9 @@ function toggleSidebar() {
 
 // --- تحميل وعرض البيانات ---
 async function loadInitialData() {
-    console.log('4. بدء جلب البيانات الأولية...');
+    console.log('📡 جاري تحميل البيانات الأولية...');
     showNotification('جاري تحميل البيانات...', 'info');
+    
     try {
         const [categories, products, deviceTypes, coupons] = await Promise.all([
             sendRequest('categories', 'GET'), 
@@ -147,11 +156,8 @@ async function loadInitialData() {
             sendRequest('coupons', 'GET')
         ]);
         
-        if (categories === undefined || products === undefined || deviceTypes === undefined || coupons === undefined) {
-            throw new Error('فشل جلب البيانات');
-        }
+        console.log('📨 تم استلام البيانات:', { categories, products, deviceTypes, coupons });
         
-        console.log('5. تم استلام كل البيانات.');
         categoriesCache = categories; 
         productsCache = products;
         
@@ -164,8 +170,9 @@ async function loadInitialData() {
         
         playNotificationSound('success');
         showNotification('تم تحميل البيانات بنجاح', 'success');
-        console.log('6. تم عرض كل البيانات بنجاح.');
+        console.log('✅ تم عرض كل البيانات بنجاح');
     } catch (error) {
+        console.error('❌ خطأ في تحميل البيانات:', error);
         playNotificationSound('error');
         showNotification("فشل تحميل البيانات، يرجى التحقق من الخادم: " + error.message, "error");
     }

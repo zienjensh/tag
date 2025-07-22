@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title id="pageTitle">تسجيل الدخول - مقهى النجمة</title>
     <link rel="stylesheet" href="css/login.css">
-    <link rel="stylesheet" href="css/modal.css">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -22,28 +20,6 @@
             </div>
             <h2 id="loadingTitle">مقهى النجمة</h2>
             <p>جاري تحميل النظام...</p>
-        </div>
-    </div>
-
-    <!-- Error Modal -->
-    <div id="errorModal" class="modal">
-        <div class="modal-content error-modal">
-            <span class="close-btn" id="closeErrorModal">&times;</span>
-            <div class="error-icon">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <h3>خطأ في تسجيل الدخول</h3>
-            <p id="errorMessageText"></p>
-            <div class="modal-actions">
-                <button class="contact-btn" onclick="closeErrorModal()">
-                    <i class="fas fa-phone"></i>
-                    تواصل مع الدعم
-                </button>
-                <button class="retry-btn" onclick="closeErrorModal()">
-                    <i class="fas fa-redo"></i>
-                    إعادة المحاولة
-                </button>
-            </div>
         </div>
     </div>
 
